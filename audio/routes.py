@@ -40,38 +40,47 @@ def init_db():
 init_db()
 
 # ── Background TTS worker ─────────────────────────────────────────────────────
+# Map simple language codes → Microsoft Edge neural voice names
+_LANG_TO_VOICE = {
+    'en': 'en-US-AriaNeural',
+    'en-uk': 'en-GB-SoniaNeural',
+    'es': 'es-ES-ElviraNeural',
+    'fr': 'fr-FR-DeniseNeural',
+    'de': 'de-DE-KatjaNeural',
+    'it': 'it-IT-ElsaNeural',
+    'pt': 'pt-BR-FranciscaNeural',
+    'zh': 'zh-CN-XiaoxiaoNeural',
+    'ja': 'ja-JP-NanamiNeural',
+    'ko': 'ko-KR-SunHiNeural',
+    'ar': 'ar-SA-ZariyahNeural',
+    'ru': 'ru-RU-SvetlanaNeural',
+    'hi': 'hi-IN-SwaraNeural',
+}
+
 def _run_tts(job_id, text, title):
-    """Runs in a real OS thread — NOT an eventlet green thread."""
-    import time
-    from gtts import gTTS
-    # Open a fresh connection — flask g is not available here
+    """Runs in a real OS thread — NOT an eventlet green thread.
+    Uses Microsoft Edge TTS (edge-tts) — free, no API key, no rate limits.
+    """
+    import asyncio
+    import edge_tts
+
     db = sqlite3.connect(DB_PATH)
     try:
         max_chars = int(get_setting('audio_max_chars', '50000'))
-        lang      = get_setting('audio_tts_lang', 'en') or 'en'
-        capped = text[:max_chars]
-        tts = gTTS(text=capped, lang=lang, slow=False)
+        lang      = (get_setting('audio_tts_lang', 'en') or 'en').lower().strip()
+        capped    = text[:max_chars]
+
+        # Resolve language code → voice name; fall back to Aria if unknown
+        voice = _LANG_TO_VOICE.get(lang, lang if 'Neural' in lang else 'en-US-AriaNeural')
+
         fname = f"{job_id}.mp3"
         fpath = os.path.join(OUTPUTS, fname)
 
-        # Retry up to 3 times with exponential backoff for 429 rate-limit errors
-        max_retries = 3
-        last_exc = None
-        for attempt in range(max_retries):
-            try:
-                tts.save(fpath)
-                last_exc = None
-                break
-            except Exception as exc:
-                last_exc = exc
-                err_str = str(exc)
-                if ('429' in err_str or 'too many requests' in err_str.lower()) \
-                        and attempt < max_retries - 1:
-                    time.sleep(2 ** (attempt + 2))  # 4 s, 8 s
-                    continue
-                raise  # non-429 or final attempt → re-raise immediately
-        if last_exc:
-            raise last_exc
+        async def _synthesize():
+            communicate = edge_tts.Communicate(capped, voice)
+            await communicate.save(fpath)
+
+        asyncio.run(_synthesize())
 
         db.execute(
             "UPDATE jobs SET status='done', filename=? WHERE id=?",
