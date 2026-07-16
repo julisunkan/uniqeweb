@@ -52,8 +52,12 @@
   sessionStorage.removeItem('sshPass');
 
   if (!password) {
-    alert('No password found. Please reconnect.');
-    window.location.href = '/ssh';
+    // Show inline message in status bar then redirect — no popup
+    const bar = document.getElementById('status-bar');
+    if (bar) {
+      bar.innerHTML = '<span style="color:#ef4444;font-weight:600">⚠ No password found — redirecting…</span>';
+    }
+    setTimeout(() => { window.location.href = '/ssh'; }, 1200);
     return;
   }
 

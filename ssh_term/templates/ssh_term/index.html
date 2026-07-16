@@ -40,6 +40,11 @@
 
     <button class="btn btn-primary btn-full" id="connectBtn" onclick="doConnect()">🔗 Connect via SSH</button>
 
+    <div id="sshConnError" style="display:none;margin-top:10px;padding:11px 14px;border-radius:10px;
+         background:color-mix(in srgb,var(--red) 12%,var(--elevated));
+         border:1px solid color-mix(in srgb,var(--red) 35%,transparent);
+         color:var(--red);font-size:13px;font-weight:600"></div>
+
     <div class="card" style="margin-top:16px;background:color-mix(in srgb,var(--green) 8%,var(--surface));border-color:color-mix(in srgb,var(--green) 25%,transparent)">
       🔒 Credentials are stored only in your browser's session storage and never sent in plain-text URLs. Connections are relayed end-to-end via WebSocket.
     </div>
@@ -117,8 +122,10 @@
     const port = parseInt(document.getElementById('portInput').value, 10) || 22;
     const pass = document.getElementById('passInput').value;
 
-    if (!host) { alert('Please enter a hostname or IP address.'); return; }
-    if (!pass) { alert('Please enter a password.'); return; }
+    const errEl = document.getElementById('sshConnError');
+    if (!host) { errEl.textContent = 'Please enter a hostname or IP address.'; errEl.style.display = ''; return; }
+    if (!pass) { errEl.textContent = 'Please enter a password.'; errEl.style.display = ''; return; }
+    errEl.style.display = 'none';
 
     sessionStorage.setItem('sshPass', pass);
     sessionStorage.setItem('sshHost', host);

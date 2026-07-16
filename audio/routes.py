@@ -42,6 +42,7 @@ init_db()
 # ── Background TTS worker ─────────────────────────────────────────────────────
 def _run_tts(job_id, text, title):
     """Runs in a real OS thread — NOT an eventlet green thread."""
+    import time
     from gtts import gTTS
     # Open a fresh connection — flask g is not available here
     db = sqlite3.connect(DB_PATH)
@@ -52,7 +53,26 @@ def _run_tts(job_id, text, title):
         tts = gTTS(text=capped, lang=lang, slow=False)
         fname = f"{job_id}.mp3"
         fpath = os.path.join(OUTPUTS, fname)
-        tts.save(fpath)
+
+        # Retry up to 3 times with exponential backoff for 429 rate-limit errors
+        max_retries = 3
+        last_exc = None
+        for attempt in range(max_retries):
+            try:
+                tts.save(fpath)
+                last_exc = None
+                break
+            except Exception as exc:
+                last_exc = exc
+                err_str = str(exc)
+                if ('429' in err_str or 'too many requests' in err_str.lower()) \
+                        and attempt < max_retries - 1:
+                    time.sleep(2 ** (attempt + 2))  # 4 s, 8 s
+                    continue
+                raise  # non-429 or final attempt → re-raise immediately
+        if last_exc:
+            raise last_exc
+
         db.execute(
             "UPDATE jobs SET status='done', filename=? WHERE id=?",
             (fname, job_id)

@@ -171,8 +171,15 @@
           {% endif %}
           <form method="POST"
                 action="{{ url_for('audio.delete', job_id=job.id) }}"
-                onsubmit="return confirm('Delete this audiobook?')">
-            <button class="btn btn-sm btn-danger" title="Delete">🗑</button>
+                id="del-form-{{ job.id }}">
+            <button class="btn btn-sm btn-danger" type="button" title="Delete"
+                    onclick="showInlineConfirm(this)">🗑</button>
+            <span class="inline-confirm" style="display:none;gap:4px;align-items:center">
+              <span style="font-size:11px;color:var(--muted)">Sure?</span>
+              <button class="btn btn-sm btn-danger" type="submit">Yes</button>
+              <button class="btn btn-sm btn-secondary" type="button"
+                      onclick="hideInlineConfirm(this)">No</button>
+            </span>
           </form>
         </div>
       </div>

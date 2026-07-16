@@ -87,6 +87,22 @@ function setLoading(btn, loading, text = '') {
   }
 }
 
+// ── Inline confirm helpers (no browser popup) ──────────────────────────────────
+// Usage: <button onclick="showInlineConfirm(this)"> paired with a sibling
+//        <span class="inline-confirm"> that holds Yes/No buttons.
+function showInlineConfirm(triggerBtn) {
+  triggerBtn.style.display = 'none';
+  const confirmEl = triggerBtn.nextElementSibling;
+  if (confirmEl) confirmEl.style.display = 'flex';
+}
+function hideInlineConfirm(cancelBtn) {
+  const confirmEl = cancelBtn.closest('.inline-confirm');
+  if (!confirmEl) return;
+  confirmEl.style.display = 'none';
+  const trigger = confirmEl.previousElementSibling;
+  if (trigger) trigger.style.display = '';
+}
+
 // ── Init on DOM ready ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   initUploadAreas();

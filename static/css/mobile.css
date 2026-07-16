@@ -518,6 +518,19 @@ body {
   .app-title   { font-size: 17px; }
 }
 
+/* ── Inline confirm (replaces browser confirm() popups) ──────────── */
+.inline-confirm {
+  display: none;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.inline-confirm span {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 /* ── Misc utility ────────────────────────────────────────────────── */
 .text-accent  { color: var(--accent); }
 .text-green   { color: var(--green);  }

@@ -656,8 +656,14 @@
           </div>
           <form method="POST"
                 action="{{ url_for('admin.clear_data', app_name='audio') }}"
-                onsubmit="return confirm('Delete ALL audio jobs and MP3 files? This cannot be undone.')">
-            <button class="abtn abtn-danger abtn-sm" type="submit">🗑️ Clear Audio Data</button>
+                id="form-clear-audio">
+            <button class="abtn abtn-danger abtn-sm" type="button"
+                    onclick="adminInlineConfirm(this, 'form-clear-audio')">🗑️ Clear Audio Data</button>
+            <span class="admin-inline-confirm" style="display:none;gap:6px;align-items:center;margin-top:8px">
+              <span style="font-size:12px;color:#6b7499">Cannot be undone —</span>
+              <button class="abtn abtn-danger abtn-sm" type="submit" form="form-clear-audio">Yes, delete all</button>
+              <button class="abtn abtn-ghost abtn-sm" type="button" onclick="adminCancelConfirm(this)">Cancel</button>
+            </span>
           </form>
         </div>
 
@@ -669,8 +675,14 @@
           </div>
           <form method="POST"
                 action="{{ url_for('admin.clear_data', app_name='pdf') }}"
-                onsubmit="return confirm('Delete ALL PDF uploads? This cannot be undone.')">
-            <button class="abtn abtn-danger abtn-sm" type="submit">🗑️ Clear PDF Data</button>
+                id="form-clear-pdf">
+            <button class="abtn abtn-danger abtn-sm" type="button"
+                    onclick="adminInlineConfirm(this, 'form-clear-pdf')">🗑️ Clear PDF Data</button>
+            <span class="admin-inline-confirm" style="display:none;gap:6px;align-items:center;margin-top:8px">
+              <span style="font-size:12px;color:#6b7499">Cannot be undone —</span>
+              <button class="abtn abtn-danger abtn-sm" type="submit" form="form-clear-pdf">Yes, delete all</button>
+              <button class="abtn abtn-ghost abtn-sm" type="button" onclick="adminCancelConfirm(this)">Cancel</button>
+            </span>
           </form>
         </div>
 
@@ -682,8 +694,14 @@
           </div>
           <form method="POST"
                 action="{{ url_for('admin.clear_data', app_name='flashcard') }}"
-                onsubmit="return confirm('Delete ALL flashcard decks? This cannot be undone.')">
-            <button class="abtn abtn-danger abtn-sm" type="submit">🗑️ Clear Flashcard Data</button>
+                id="form-clear-flashcard">
+            <button class="abtn abtn-danger abtn-sm" type="button"
+                    onclick="adminInlineConfirm(this, 'form-clear-flashcard')">🗑️ Clear Flashcard Data</button>
+            <span class="admin-inline-confirm" style="display:none;gap:6px;align-items:center;margin-top:8px">
+              <span style="font-size:12px;color:#6b7499">Cannot be undone —</span>
+              <button class="abtn abtn-danger abtn-sm" type="submit" form="form-clear-flashcard">Yes, delete all</button>
+              <button class="abtn abtn-ghost abtn-sm" type="button" onclick="adminCancelConfirm(this)">Cancel</button>
+            </span>
           </form>
         </div>
       </div>
@@ -705,9 +723,14 @@
           <p style="color:var(--muted);font-size:13px">No audit entries yet.</p>
         {% endif %}
         <form method="POST" action="{{ url_for('admin.clear_data', app_name='audit') }}"
-              style="margin-top:16px"
-              onsubmit="return confirm('Clear audit log?')">
-          <button class="abtn abtn-ghost abtn-sm" type="submit">🗑️ Clear Log</button>
+              style="margin-top:16px" id="form-clear-audit">
+          <button class="abtn abtn-ghost abtn-sm" type="button"
+                  onclick="adminInlineConfirm(this, 'form-clear-audit')">🗑️ Clear Log</button>
+          <span class="admin-inline-confirm" style="display:none;gap:6px;align-items:center;margin-top:8px">
+            <span style="font-size:12px;color:#6b7499">Clear all entries?</span>
+            <button class="abtn abtn-danger abtn-sm" type="submit" form="form-clear-audit">Yes, clear</button>
+            <button class="abtn abtn-ghost abtn-sm" type="button" onclick="adminCancelConfirm(this)">Cancel</button>
+          </span>
         </form>
       </div>
     </div>
@@ -716,6 +739,18 @@
 </div><!-- /.main -->
 
 <script>
+/* ── Inline confirm helpers (replaces browser confirm() popups) ───── */
+function adminInlineConfirm(triggerBtn, formId) {
+  triggerBtn.style.display = 'none';
+  const confirmSpan = triggerBtn.nextElementSibling;
+  confirmSpan.style.display = 'flex';
+}
+function adminCancelConfirm(cancelBtn) {
+  const confirmSpan = cancelBtn.closest('.admin-inline-confirm');
+  confirmSpan.style.display = 'none';
+  confirmSpan.previousElementSibling.style.display = '';
+}
+
 /* ── Panel switching ─────────────────────────────────────────────── */
 const panelTitles = {
   overview:    'Dashboard',
