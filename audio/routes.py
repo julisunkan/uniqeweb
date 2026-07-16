@@ -40,29 +40,15 @@ def init_db():
 init_db()
 
 # ── Background TTS worker ─────────────────────────────────────────────────────
-# Map simple language codes → Microsoft Edge neural voice names
-_LANG_TO_VOICE = {
-    'en': 'en-US-AriaNeural',
-    'en-uk': 'en-GB-SoniaNeural',
-    'es': 'es-ES-ElviraNeural',
-    'fr': 'fr-FR-DeniseNeural',
-    'de': 'de-DE-KatjaNeural',
-    'it': 'it-IT-ElsaNeural',
-    'pt': 'pt-BR-FranciscaNeural',
-    'zh': 'zh-CN-XiaoxiaoNeural',
-    'ja': 'ja-JP-NanamiNeural',
-    'ko': 'ko-KR-SunHiNeural',
-    'ar': 'ar-SA-ZariyahNeural',
-    'ru': 'ru-RU-SvetlanaNeural',
-    'hi': 'hi-IN-SwaraNeural',
-}
-
 def _run_tts(job_id, text, title):
     """Runs in a real OS thread — NOT an eventlet green thread.
-    Uses Microsoft Edge TTS (edge-tts) — free, no API key, no rate limits.
+    Uses espeak-ng for fully offline TTS — no internet, no rate limits.
+    Works on PythonAnywhere free tier and any Linux system.
+    Install: apt install espeak-ng  (pre-installed on PythonAnywhere / Ubuntu)
     """
-    import asyncio
-    import edge_tts
+    import shutil
+    import subprocess
+    import tempfile
 
     db = sqlite3.connect(DB_PATH)
     try:
@@ -70,17 +56,28 @@ def _run_tts(job_id, text, title):
         lang      = (get_setting('audio_tts_lang', 'en') or 'en').lower().strip()
         capped    = text[:max_chars]
 
-        # Resolve language code → voice name; fall back to Aria if unknown
-        voice = _LANG_TO_VOICE.get(lang, lang if 'Neural' in lang else 'en-US-AriaNeural')
-
-        fname = f"{job_id}.mp3"
+        fname = f"{job_id}.wav"
         fpath = os.path.join(OUTPUTS, fname)
 
-        async def _synthesize():
-            communicate = edge_tts.Communicate(capped, voice)
-            await communicate.save(fpath)
+        espeak = shutil.which('espeak-ng') or shutil.which('espeak')
+        if not espeak:
+            raise RuntimeError(
+                'espeak-ng not found. Install it with: apt install espeak-ng'
+            )
 
-        asyncio.run(_synthesize())
+        # Write to a temp file so long texts and special characters are handled safely
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt',
+                                         delete=False, encoding='utf-8') as f:
+            f.write(capped)
+            tmppath = f.name
+
+        try:
+            subprocess.run(
+                [espeak, '-v', lang, '-f', tmppath, '-w', fpath],
+                check=True, capture_output=True, text=True, timeout=300
+            )
+        finally:
+            os.unlink(tmppath)
 
         db.execute(
             "UPDATE jobs SET status='done', filename=? WHERE id=?",
@@ -192,7 +189,8 @@ def download(filename):
     if not os.path.exists(path):
         flash('File not found.', 'error')
         return redirect(url_for('audio.index'))
-    return send_file(path, mimetype='audio/mpeg',
+    mime = 'audio/wav' if safe.endswith('.wav') else 'audio/mpeg'
+    return send_file(path, mimetype=mime,
                      as_attachment=True, download_name=safe)
 
 

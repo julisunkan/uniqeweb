@@ -167,7 +167,7 @@
           {% if job.status == 'done' and job.filename %}
             <a class="btn btn-sm btn-green"
                href="{{ url_for('audio.download', filename=job.filename) }}"
-               title="Download MP3">⬇ MP3</a>
+               title="Download audio">⬇ Audio</a>
           {% endif %}
           <form method="POST"
                 action="{{ url_for('audio.delete', job_id=job.id) }}"
