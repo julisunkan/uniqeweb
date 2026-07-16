@@ -24,7 +24,7 @@ def create_app():
     app.register_blueprint(admin_bp,  url_prefix='/julisunkan')
 
     # ── SocketIO (used by SSH terminal) ───────────────────────────────────────
-    socketio.init_app(app, cors_allowed_origins='*', async_mode='eventlet',
+    socketio.init_app(app, cors_allowed_origins='*', async_mode='gevent',
                       logger=False, engineio_logger=False)
 
     # ── Home / landing page ───────────────────────────────────────────────────
