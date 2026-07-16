@@ -42,42 +42,46 @@ init_db()
 # ── Background TTS worker ─────────────────────────────────────────────────────
 def _run_tts(job_id, text, title):
     """Runs in a real OS thread — NOT an eventlet green thread.
-    Uses espeak-ng for fully offline TTS — no internet, no rate limits.
-    Works on PythonAnywhere free tier and any Linux system.
-    Install: apt install espeak-ng  (pre-installed on PythonAnywhere / Ubuntu)
+    Uses edge-tts (Microsoft Edge neural TTS) — produces MP3 output.
+    Requires internet access. Voice is configured via admin settings
+    (audio_tts_lang). Accepts full edge-tts voice names
+    (e.g. 'en-US-AriaNeural') or bare BCP-47 language codes ('en', 'es', …).
     """
-    import shutil
-    import subprocess
-    import tempfile
+    import asyncio
+    import edge_tts
+
+    # Map bare language codes → a default edge-tts voice
+    _LANG_TO_VOICE = {
+        'en': 'en-US-AriaNeural',
+        'es': 'es-ES-AlvaroNeural',
+        'fr': 'fr-FR-DeniseNeural',
+        'de': 'de-DE-KatjaNeural',
+        'ja': 'ja-JP-NanamiNeural',
+        'zh': 'zh-CN-XiaoxiaoNeural',
+        'pt': 'pt-BR-FranciscaNeural',
+        'it': 'it-IT-ElsaNeural',
+        'ko': 'ko-KR-SunHiNeural',
+        'ar': 'ar-EG-SalmaNeural',
+    }
 
     db = sqlite3.connect(DB_PATH)
     try:
         max_chars = int(get_setting('audio_max_chars', '50000'))
-        lang      = (get_setting('audio_tts_lang', 'en') or 'en').lower().strip()
-        capped    = text[:max_chars]
+        voice     = (get_setting('audio_tts_lang', 'en-US-AriaNeural') or
+                     'en-US-AriaNeural').strip()
 
-        fname = f"{job_id}.wav"
-        fpath = os.path.join(OUTPUTS, fname)
+        # Accept bare language codes as a convenience shorthand
+        voice = _LANG_TO_VOICE.get(voice.lower(), voice)
 
-        espeak = shutil.which('espeak-ng') or shutil.which('espeak')
-        if not espeak:
-            raise RuntimeError(
-                'espeak-ng not found. Install it with: apt install espeak-ng'
-            )
+        capped = text[:max_chars]
+        fname  = f"{job_id}.mp3"
+        fpath  = os.path.join(OUTPUTS, fname)
 
-        # Write to a temp file so long texts and special characters are handled safely
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt',
-                                         delete=False, encoding='utf-8') as f:
-            f.write(capped)
-            tmppath = f.name
+        async def _synthesize():
+            communicate = edge_tts.Communicate(capped, voice)
+            await communicate.save(fpath)
 
-        try:
-            subprocess.run(
-                [espeak, '-v', lang, '-f', tmppath, '-w', fpath],
-                check=True, capture_output=True, text=True, timeout=300
-            )
-        finally:
-            os.unlink(tmppath)
+        asyncio.run(_synthesize())
 
         db.execute(
             "UPDATE jobs SET status='done', filename=? WHERE id=?",

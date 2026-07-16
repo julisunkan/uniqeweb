@@ -11,7 +11,7 @@ ADMIN_DB = os.path.join(os.path.dirname(__file__), 'admin', 'admin.db')
 # Default values for every known setting key
 DEFAULTS = {
     'groq_api_key':             '',
-    'audio_tts_lang':           'en',
+    'audio_tts_lang':           'en-US-AriaNeural',
     'audio_max_chars':          '50000',
     'flashcard_default_count':  '15',
     'flashcard_max_count':      '50',

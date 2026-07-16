@@ -6,7 +6,7 @@ Five independent mobile-first web apps running under a single Flask server.
 - **Backend**: Python / Flask 3 + Flask-SocketIO (eventlet)
 - **Database**: SQLite (each app has its own `.db` file in its module directory)
 - **AI**: Groq API (`llama-3.3-70b-versatile`) — Email Sig & Flashcard apps
-- **TTS**: gTTS (Google Text-to-Speech) — Audiobook app
+- **TTS**: edge-tts (Microsoft Edge neural TTS) — Audiobook app
 - **PDF**: PyMuPDF (text extraction), pypdf (form fields), reportlab (overlay)
 - **SSH**: paramiko + xterm.js
 
