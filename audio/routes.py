@@ -81,7 +81,11 @@ def _run_tts(job_id, text, title):
             communicate = edge_tts.Communicate(capped, voice)
             await communicate.save(fpath)
 
-        asyncio.run(_synthesize())
+        loop = asyncio.new_event_loop()
+        try:
+            loop.run_until_complete(_synthesize())
+        finally:
+            loop.close()
 
         db.execute(
             "UPDATE jobs SET status='done', filename=? WHERE id=?",
