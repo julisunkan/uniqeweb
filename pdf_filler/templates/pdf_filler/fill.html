@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Fill — {{ original_name }}{% endblock %}
+{% block body_class %}app-pdf{% endblock %}
+{% block header_icon %}📄{% endblock %}
+{% block header_title %}PDF Form Filler{% endblock %}
+
+{% block back_btn %}{% endblock %}
+
+{% block content %}
+
+<!-- File header card -->
+<div class="card card-blue" style="margin-bottom:20px">
+  <div style="display:flex;align-items:center;gap:12px">
+    <span style="font-size:32px">📋</span>
+    <div>
+      <div class="fw-black" style="font-size:18px">{{ original_name }}</div>
+      <div class="text-muted" style="font-size:13px;margin-top:4px">
+        {% if has_fields %}
+          <span class="chip chip-blue">{{ fields|length }} form field{{ 's' if fields|length != 1 }}</span>
+        {% else %}
+          <span class="chip chip-orange">No form fields detected</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Fill form -->
+<form method="POST" action="/pdf/fill/{{ upload_id }}" id="fillForm">
+
+  {% if has_fields %}
+    <div class="content-grid">
+      {% for field_name in fields %}
+      <div class="input-group">
+        <label class="input-label" for="field_{{ loop.index }}">{{ field_name }}</label>
+        <input
+          class="input"
+          type="text"
+          id="field_{{ loop.index }}"
+          name="field_{{ field_name }}"
+          placeholder="Enter value…"
+          autocomplete="off"
+        >
+      </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="card card-orange" style="margin-bottom:20px">
+      <div class="card-title">📝 Add Text Annotation</div>
+      <p style="color:var(--text-2);font-size:14px;margin-bottom:16px">
+        This PDF has no fillable form fields. Add a text annotation to be overlaid on the first page:
+      </p>
+      <div class="input-group">
+        <label class="input-label" for="annotation">Annotation text</label>
+        <textarea
+          class="textarea"
+          id="annotation"
+          name="annotation"
+          rows="5"
+          maxlength="200"
+          placeholder="Enter text to overlay on the first page…"
+        ></textarea>
+        <div style="color:var(--text-2);font-size:12px;margin-top:4px;text-align:right">Max 200 characters</div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Action buttons -->
+  <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap">
+    <button type="submit" class="btn btn-primary" id="exportBtn">📥 Download Filled PDF</button>
+    <a href="/pdf/" class="btn btn-secondary">← New Upload</a>
+  </div>
+
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const fillForm = document.getElementById('fillForm');
+  const exportBtn = document.getElementById('exportBtn');
+
+  fillForm.addEventListener('submit', function () {
+    setLoading(exportBtn, true, 'Generating PDF…');
+    setTimeout(function () { setLoading(exportBtn, false, '📥 Download Filled PDF'); }, 8000);
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,2 @@
+- [Mobile App Suite architecture](suite-architecture.md) — 5 Flask blueprints in independent dirs; socketio singleton in extensions.py imported by ssh_term.
+- [Groq key convention](groq-key.md) — GROQ_API_KEY env var; email_sig + flashcard show graceful error if missing.

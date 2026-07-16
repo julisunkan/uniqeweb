@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/home/runner/workspace/app.py", line 94, in <module>
+    app = create_app()
+          ^^^^^^^^^^^^
+  File "/home/runner/workspace/app.py", line 36, in create_app
+    from routes.export_routes import bp as exports_bp
+  File "/home/runner/workspace/routes/export_routes.py", line 6, in <module>
+    from services.export_service import export_docx, export_pdf, export_txt
+  File "/home/runner/workspace/services/export_service.py", line 10, in <module>
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/reportlab/lib/styles.py", line 26, in <module>
+    from reportlab.lib.colors import black
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/reportlab/lib/colors.py", line 43, in <module>
+    from reportlab.lib.rl_accel import fp_str
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/reportlab/lib/rl_accel.py", line 34, in <module>
+    from reportlab.lib.utils import isUnicode, isSeq, rawBytes, asNative, asBytes
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/reportlab/lib/utils.py", line 15, in <module>
+    from PIL import Image
+ModuleNotFoundError: No module named 'PIL'

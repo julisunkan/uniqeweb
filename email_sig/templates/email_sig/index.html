@@ -1,0 +1,309 @@
+{% extends 'base.html' %}
+
+{% block title %}Email Signature Generator{% endblock %}
+{% block body_class %}app-email{% endblock %}
+{% block header_icon %}✉️{% endblock %}
+{% block header_title %}Email Signature{% endblock %}
+{% block back_btn %}{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<div class="hero" style="margin-bottom:24px">
+  <div class="hero-title">✉️ Signature Builder</div>
+  <div class="hero-sub">Design a professional email signature with live preview. Copy the HTML or download for use in any email client.</div>
+</div>
+
+<!-- THREE-COLUMN GRID -->
+<div class="content-grid-3">
+
+  <!-- COLUMN 1-2: Form -->
+  <div class="col-span-2" style="display:flex;flex-direction:column;gap:20px">
+
+    <!-- Card A: Personal Info -->
+    <div class="card card-red">
+      <div class="card-title">👤 Personal Info</div>
+      <div class="input-row">
+        <div class="input-group">
+          <label class="input-label" for="name">Full Name</label>
+          <input class="input" id="name" type="text" placeholder="Jane Smith" autocomplete="name">
+        </div>
+        <div class="input-group">
+          <label class="input-label" for="jobTitle">Job Title</label>
+          <input class="input" id="jobTitle" type="text" placeholder="Senior Designer">
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label class="input-label" for="company">Company</label>
+          <input class="input" id="company" type="text" placeholder="Acme Inc.">
+        </div>
+        <div class="input-group">
+          <!-- intentionally blank second column -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Card B: Contact Details -->
+    <div class="card card-orange">
+      <div class="card-title">📬 Contact Details</div>
+      <div class="input-row">
+        <div class="input-group">
+          <label class="input-label" for="emailAddr">Email</label>
+          <input class="input" id="emailAddr" type="email" placeholder="jane@acme.com" autocomplete="email">
+        </div>
+        <div class="input-group">
+          <label class="input-label" for="phone">Phone</label>
+          <input class="input" id="phone" type="tel" placeholder="+1 555 000 0000">
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label class="input-label" for="website">Website</label>
+          <input class="input" id="website" type="url" placeholder="https://jane.dev">
+        </div>
+        <div class="input-group">
+          <label class="input-label" for="twitter">Twitter Handle</label>
+          <input class="input" id="twitter" type="text" placeholder="@janesmith">
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="linkedin">LinkedIn URL</label>
+        <input class="input" id="linkedin" type="url" placeholder="https://linkedin.com/in/jane">
+      </div>
+    </div>
+
+    <!-- Card C: Style -->
+    <div class="card card-yellow">
+      <div class="card-title">🎨 Style</div>
+
+      <!-- Accent Color -->
+      <div class="input-group">
+        <label class="input-label">Accent Color</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;align-items:center">
+          <div class="swatch-btn" data-color="#ef4444" style="width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:#ef4444;transition:border-color .15s,transform .15s" title="Red"></div>
+          <div class="swatch-btn" data-color="#f97316" style="width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:#f97316;transition:border-color .15s,transform .15s" title="Orange"></div>
+          <div class="swatch-btn" data-color="#3b82f6" style="width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:#3b82f6;transition:border-color .15s,transform .15s" title="Blue"></div>
+          <div class="swatch-btn" data-color="#22c55e" style="width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:#22c55e;transition:border-color .15s,transform .15s" title="Green"></div>
+          <div class="swatch-btn" data-color="#eab308" style="width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:#eab308;transition:border-color .15s,transform .15s" title="Yellow"></div>
+          <div class="swatch-btn" data-color="#a855f7" style="width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:#a855f7;transition:border-color .15s,transform .15s" title="Purple"></div>
+        </div>
+        <input type="hidden" id="accentColor" value="#ef4444">
+      </div>
+
+      <!-- Font -->
+      <div class="input-group">
+        <label class="input-label" for="font">Font</label>
+        <select class="select" id="font">
+          <option value="Georgia">Georgia</option>
+          <option value="Arial">Arial</option>
+          <option value="Verdana">Verdana</option>
+          <option value="Trebuchet MS">Trebuchet MS</option>
+          <option value="Times New Roman">Times New Roman</option>
+        </select>
+      </div>
+
+      <!-- Template -->
+      <div class="input-group">
+        <label class="input-label">Template</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm template-pill" data-tpl="modern">Modern</button>
+          <button class="btn btn-ghost btn-sm template-pill" data-tpl="classic">Classic</button>
+          <button class="btn btn-ghost btn-sm template-pill" data-tpl="minimal">Minimal</button>
+        </div>
+        <input type="hidden" id="templateInput" value="modern">
+      </div>
+    </div>
+
+    <!-- Card D: AI Tagline -->
+    <div class="card card-blue">
+      <div class="card-title">✨ AI Tagline</div>
+      <div class="input-group">
+        <label class="input-label" for="tagline">Tagline</label>
+        <input class="input" id="tagline" type="text" placeholder="Your professional tagline here…">
+      </div>
+      <button class="btn btn-ghost btn-full" id="genTaglineBtn">🤖 Generate with AI</button>
+      <p style="font-size:12px;margin-top:8px" class="text-muted">Powered by Groq AI · Requires GROQ_API_KEY</p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn btn-primary" id="copyHtmlBtn">📋 Copy HTML</button>
+      <button class="btn btn-secondary" id="downloadBtn">⬇️ Download .html</button>
+    </div>
+
+  </div><!-- /col-span-2 -->
+
+  <!-- COLUMN 3: Preview -->
+  <div style="position:sticky;top:16px">
+    <div class="card card-glow">
+      <div class="card-title">👁️ Live Preview</div>
+      <iframe id="previewFrame" style="width:100%;min-height:320px;border:none;border-radius:12px;background:#fff"></iframe>
+      <div style="margin-top:10px">
+        <span class="chip chip-accent">Auto-updates as you type</span>
+      </div>
+    </div>
+
+    <!-- How to use -->
+    <div class="card" style="margin-top:12px;background:var(--elevated)">
+      <ol style="padding-left:18px;font-size:13px;color:var(--muted);line-height:2;margin:0">
+        <li>Fill in your details on the left</li>
+        <li>Pick a style and colour</li>
+        <li>Optionally generate an AI tagline</li>
+        <li>Click <strong style="color:var(--text)">Copy HTML</strong> and paste into Gmail/Outlook settings</li>
+      </ol>
+    </div>
+  </div>
+
+</div><!-- /content-grid-3 -->
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  let debounceTimer = null;
+
+  // ── Collect form values ──────────────────────────────────────────────────
+  function getFormData() {
+    return {
+      name:         $('name').value.trim(),
+      title:        $('jobTitle').value.trim(),
+      company:      $('company').value.trim(),
+      email:        $('emailAddr').value.trim(),
+      phone:        $('phone').value.trim(),
+      website:      $('website').value.trim(),
+      linkedin:     $('linkedin').value.trim(),
+      twitter:      $('twitter').value.trim(),
+      tagline:      $('tagline').value.trim(),
+      accent_color: $('accentColor').value,
+      font:         $('font').value,
+      template:     $('templateInput').value,
+    };
+  }
+
+  // ── updatePreview (debounced 400ms) ──────────────────────────────────────
+  function scheduleUpdate() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(updatePreview, 400);
+  }
+
+  async function updatePreview() {
+    const data = getFormData();
+    try {
+      const res = await fetch('/email/render-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (json.html) {
+        const frame = $('previewFrame');
+        frame.srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{margin:0;padding:16px;background:#fff}</style></head><body>' + json.html + '</body></html>';
+      }
+    } catch (err) {
+      showToast('Preview error: ' + err.message, 'error');
+    }
+  }
+
+  // ── generateTagline ──────────────────────────────────────────────────────
+  $('genTaglineBtn').addEventListener('click', async function () {
+    const btn = this;
+    const orig = btn.textContent;
+    btn.textContent = '⏳ Generating…';
+    btn.disabled = true;
+    const data = getFormData();
+    try {
+      const res = await fetch('/email/ai-tagline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: data.name, title: data.title, company: data.company, style: 'professional' }),
+      });
+      const json = await res.json();
+      if (json.error) {
+        showToast(json.error, 'error');
+      } else {
+        $('tagline').value = json.tagline;
+        showToast('Tagline generated!', 'success');
+        scheduleUpdate();
+      }
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error');
+    } finally {
+      btn.textContent = orig;
+      btn.disabled = false;
+    }
+  });
+
+  // ── copyHtml ─────────────────────────────────────────────────────────────
+  $('copyHtmlBtn').addEventListener('click', async function () {
+    const data = getFormData();
+    try {
+      const res = await fetch('/email/render-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (!json.html) { showToast('Nothing to copy yet.', 'error'); return; }
+      await navigator.clipboard.writeText(json.html);
+      showToast('HTML copied!', 'success');
+    } catch (err) {
+      showToast('Copy failed: ' + err.message, 'error');
+    }
+  });
+
+  // ── downloadHtml ─────────────────────────────────────────────────────────
+  $('downloadBtn').addEventListener('click', function () {
+    const data = getFormData();
+    const params = new URLSearchParams(data);
+    window.open('/email/export.html?' + params.toString());
+  });
+
+  // ── Color swatches ───────────────────────────────────────────────────────
+  document.querySelectorAll('.swatch-btn').forEach(function (sw) {
+    sw.addEventListener('click', function () {
+      document.querySelectorAll('.swatch-btn').forEach(function (s) {
+        s.style.borderColor = 'transparent';
+        s.style.transform = 'scale(1)';
+      });
+      sw.style.borderColor = 'white';
+      sw.style.transform = 'scale(1.15)';
+      $('accentColor').value = sw.dataset.color;
+      scheduleUpdate();
+    });
+  });
+
+  // Set first swatch (red) as default active
+  (function () {
+    var first = document.querySelector('.swatch-btn');
+    if (first) { first.style.borderColor = 'white'; first.style.transform = 'scale(1.15)'; }
+  })();
+
+  // ── Template pill buttons ─────────────────────────────────────────────────
+  document.querySelectorAll('.template-pill').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.template-pill').forEach(function (b) {
+        b.className = 'btn btn-ghost btn-sm template-pill';
+      });
+      btn.className = 'btn btn-primary btn-sm template-pill';
+      $('templateInput').value = btn.dataset.tpl;
+      scheduleUpdate();
+    });
+  });
+
+  // ── Attach input events to all fields ────────────────────────────────────
+  ['name','jobTitle','company','emailAddr','phone','website','linkedin','twitter','tagline','font'].forEach(function (id) {
+    var el = $(id);
+    if (!el) return;
+    el.addEventListener('input', scheduleUpdate);
+    el.addEventListener('change', scheduleUpdate);
+  });
+
+  // ── Initial preview after 600ms ───────────────────────────────────────────
+  setTimeout(updatePreview, 600);
+
+})();
+</script>
+{% endblock %}

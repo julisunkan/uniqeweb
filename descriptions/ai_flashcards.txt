@@ -1,0 +1,102 @@
+================================================================================
+  AI FLASHCARD GENERATOR — App Description, Features & Keywords
+================================================================================
+
+APP NAME
+  AI Flashcard Generator
+
+SHORT DESCRIPTION (1–2 sentences)
+  Paste your notes, upload a PDF/DOCX/TXT file, and let Groq AI instantly
+  generate a complete set of study flashcards. Study them with an interactive
+  3D flip-card interface, keyboard navigation, shuffle mode, and progress
+  tracking — all in your browser.
+
+FULL DESCRIPTION
+  The AI Flashcard Generator turns any body of text into a structured,
+  interactive study deck in seconds. Powered by Groq's llama-3.3-70b-versatile
+  language model, it reads your source material and produces a configurable
+  number of question-and-answer flashcards (5 to 50) with clear, concise
+  content optimised for learning and retention.
+
+  The study interface features smooth CSS 3D card flip animations, a progress
+  bar that advances as you work through the deck, a shuffle mode to randomise
+  card order, and full keyboard control (Space to flip, Arrow Left/Right to
+  navigate). When you reach the last card, a completion screen appears with
+  the option to restart.
+
+  All decks are saved to the local database, so you can return to study them
+  at any time. Multiple decks can coexist and are listed in your library with
+  card counts, creation dates, and quick Study / Delete actions. Decks are
+  accessible across sessions from the same device.
+
+HOW IT WORKS
+  1. Enter a deck title and choose how many cards to generate (5–50).
+  2. Paste your notes / article / textbook excerpt into the text area,
+     OR upload a PDF, DOCX, or TXT file.
+  3. Click "⚡ Generate Flashcards" — Groq AI analyses the content.
+  4. The app parses the JSON response and saves the deck to the database.
+  5. You are redirected to the study page immediately.
+  6. Flip cards, navigate with keyboard or buttons, and track your progress.
+
+STUDY INTERFACE FEATURES
+  ● CSS 3D flip animation (rotateY 180°) with smooth cubic-bezier easing
+  ● Front face shows the question; back face shows the answer with accent colour
+  ● Progress bar advances with each card viewed
+  ● Card counter (e.g. "3 / 15") visible at all times
+  ● Shuffle mode: Fisher-Yates randomisation of the deck order
+  ● Keyboard shortcuts: Space = flip, ← = previous, → = next
+  ● On-screen navigation buttons for touch/mouse users
+  ● Completion screen with summary and Restart option
+  ● Per-deck study mode — each deck studied independently
+
+DECK MANAGEMENT FEATURES
+  ● Create unlimited decks (subject to storage)
+  ● Library view showing all decks with card counts and dates
+  ● Per-deck delete with browser confirmation dialog
+  ● Recent decks widget on the create page
+  ● Total stats: number of decks and total cards across all decks
+
+AI GENERATION DETAILS
+  ● Model: Groq llama-3.3-70b-versatile
+  ● System prompt instructs the model to produce concise, educator-quality cards
+  ● Response parsed as a strict JSON array of {q, a} objects
+  ● Markdown code fences stripped automatically if present
+  ● Configurable card count: 5–50 (admin can set default and maximum)
+  ● Text input capped at 8,000 characters for the AI call (covers most use cases)
+
+FILE EXTRACTION
+  ● PDF — extracted via PyMuPDF (fitz), all pages concatenated
+  ● DOCX — extracted via python-docx, all paragraphs joined
+  ● TXT — decoded as UTF-8
+
+ADMIN CONTROLS
+  ● Default card count (pre-filled in the create form)
+  ● Maximum card count (enforced server-side)
+  ● Enable/disable the Flashcard app entirely
+  ● Clear all decks and cards with one action
+
+LIMITATIONS
+  ● Requires a valid GROQ_API_KEY to generate cards
+  ● AI output quality depends on the clarity and length of the source text
+  ● Scanned/image PDFs without OCR text will produce poor results
+  ● Groq rate limits apply based on your API tier
+
+USE CASES
+  ● Students studying from lecture notes, textbooks, or research papers
+  ● Language learners creating vocabulary Q&A pairs from reading material
+  ● Professionals memorising product specs, procedures, or compliance rules
+  ● Teachers creating quiz cards from lesson content
+  ● Anyone preparing for exams or certifications
+
+TECH STACK
+  Flask · Groq API (llama-3.3-70b-versatile) · SQLite · PyMuPDF · python-docx
+  · CSS 3D Transforms · JavaScript (vanilla)
+
+KEYWORDS
+  AI flashcard generator, flashcard maker, study flashcards, Groq AI flashcards,
+  LLM study tool, auto flashcard, PDF to flashcards, DOCX to study cards,
+  spaced repetition, flip card, 3D flashcard, quiz generator, note to flashcard,
+  llama flashcard, AI study app, Flask flashcard app, smart flashcards, Anki
+  alternative, online flashcard, text to quiz, AI study assistant, study deck
+
+================================================================================

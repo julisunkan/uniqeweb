@@ -1,0 +1,375 @@
+{% extends 'base.html' %}
+
+{% block title %}Audiobooks{% endblock %}
+{% block body_class %}app-audio{% endblock %}
+{% block header_icon %}🎧{% endblock %}
+{% block header_title %}Audiobooks{% endblock %}
+{% block back_btn %}{% endblock %}
+
+{% block head %}
+<style>
+  .steps-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .step-card {
+    flex: 1;
+    min-width: 180px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 20px 16px;
+    text-align: center;
+  }
+  .step-num {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+  .step-title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  .step-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .list-item-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+    align-items: center;
+  }
+  .job-error-msg {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    word-break: break-all;
+  }
+  #progressBar { margin-top: 12px; display: none; }
+  #progressStatus { font-size: 12px; color: var(--muted); margin-top: 6px; text-align: center; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero ─────────────────────────────────────────────────── -->
+<div class="hero" style="margin-bottom: 20px;">
+  <div class="hero-title">🎧 Audiobook Generator</div>
+  <div class="hero-sub">Convert text, PDF, DOCX or TXT files into downloadable MP3 audiobooks powered by Google TTS.</div>
+</div>
+
+<!-- ── Two-column grid ───────────────────────────────────────── -->
+<div class="content-grid" style="margin-bottom: 20px;">
+
+  <!-- LEFT — Create Audiobook -->
+  <div class="card card-orange card-glow">
+    <div class="card-title">📝 New Audiobook</div>
+
+    <!-- Tabs -->
+    <div class="tabs" id="inputTabs" style="margin-bottom: 16px;">
+      <div class="tab active" data-tab="pane-paste">Paste Text</div>
+      <div class="tab"        data-tab="pane-upload">Upload File</div>
+    </div>
+
+    <form method="POST" action="{{ url_for('audio.process') }}"
+          id="audioForm" enctype="multipart/form-data">
+
+      <input type="hidden" id="activeTabInput" name="active_tab" value="paste">
+
+      <!-- Paste pane -->
+      <div id="pane-paste">
+        <div class="input-group">
+          <label class="input-label" for="titlePaste">Title</label>
+          <input class="input" id="titlePaste" name="title"
+                 placeholder="My Audiobook" maxlength="120">
+        </div>
+        <div class="input-group" style="margin-top: 12px;">
+          <label class="input-label" for="textInput">
+            Text &nbsp;<span class="chip chip-orange" id="charCount">0 / 50 000</span>
+          </label>
+          <textarea class="textarea" id="textInput" name="text"
+                    rows="10" placeholder="Paste your text here…"
+                    data-maxlength="50000"
+                    style="min-height: 200px;"></textarea>
+        </div>
+      </div>
+
+      <!-- Upload pane -->
+      <div id="pane-upload" style="display: none;">
+        <div class="input-group">
+          <label class="input-label" for="titleUpload">Title</label>
+          <input class="input" id="titleUpload" name="title_upload"
+                 placeholder="My Audiobook" maxlength="120">
+        </div>
+        <div class="input-group" style="margin-top: 12px;">
+          <label class="input-label">File</label>
+          <label class="upload-area" for="fileInput">
+            <span class="upload-icon">📄</span>
+            <span class="upload-text" id="uploadText">Drag &amp; drop or tap to choose — PDF, DOCX or TXT</span>
+            <input type="file" id="fileInput" name="file"
+                   accept=".pdf,.docx,.txt">
+          </label>
+        </div>
+      </div>
+
+      <!-- Generate button -->
+      <div style="margin-top: 16px;">
+        <button class="btn btn-primary btn-full btn-lg" id="generateBtn" type="submit">
+          🎙️ Generate Audiobook
+        </button>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-bar" id="progressBar">
+        <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+      </div>
+      <div id="progressStatus"></div>
+
+    </form>
+  </div>
+
+  <!-- RIGHT — Recent Audiobooks -->
+  <div class="card card-yellow">
+    <div class="card-title">📚 Your Audiobooks</div>
+
+    {% if jobs %}
+      {% for job in jobs %}
+      <div class="list-item" id="job-{{ job.id }}">
+        <div class="list-item-icon" style="font-size: 22px;">
+          {% if job.status == 'done' %}🎵
+          {% elif job.status == 'error' %}❌
+          {% else %}<span class="spinner" style="width:20px;height:20px;"></span>{% endif %}
+        </div>
+
+        <div class="list-item-content">
+          <div class="list-item-title fw-bold">{{ job.title | e }}</div>
+          <div class="list-item-sub">
+            {% if job.status == 'done' %}
+              <span class="chip chip-green">Done</span>
+            {% elif job.status == 'error' %}
+              <span class="chip chip-red">Error</span>
+            {% else %}
+              <span class="chip chip-orange">Processing…</span>
+              <span class="spinner" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-left:4px;"></span>
+            {% endif %}
+            &nbsp;<span class="text-muted">{{ job.created_at[:16] if job.created_at else '' }}</span>
+          </div>
+          {% if job.status == 'error' and job.error %}
+            <div class="job-error-msg">{{ job.error | e }}</div>
+          {% endif %}
+        </div>
+
+        <div class="list-item-actions">
+          {% if job.status == 'done' and job.filename %}
+            <a class="btn btn-sm btn-green"
+               href="{{ url_for('audio.download', filename=job.filename) }}"
+               title="Download MP3">⬇ MP3</a>
+          {% endif %}
+          <form method="POST"
+                action="{{ url_for('audio.delete', job_id=job.id) }}"
+                onsubmit="return confirm('Delete this audiobook?')">
+            <button class="btn btn-sm btn-danger" title="Delete">🗑</button>
+          </form>
+        </div>
+      </div>
+      {% if not loop.last %}<div style="height:1px;background:rgba(255,255,255,0.06);margin:0 -20px;"></div>{% endif %}
+      {% endfor %}
+
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">🎧</div>
+        <div class="empty-state-title">No audiobooks yet</div>
+        <div class="empty-state-sub">Generate your first one →</div>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- ── How It Works ──────────────────────────────────────────── -->
+<div class="card card-blue col-span-2">
+  <div class="card-title">💡 How It Works</div>
+  <div class="steps-row">
+    <div class="step-card">
+      <div class="step-num">🔵 1</div>
+      <div class="step-title">Add Your Content</div>
+      <div class="step-desc">Paste text directly or upload a PDF, DOCX, or TXT file.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">🟠 2</div>
+      <div class="step-title">We Process It</div>
+      <div class="step-desc">We extract the text and send it to Google TTS for high-quality synthesis.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">🟢 3</div>
+      <div class="step-title">Download Your MP3</div>
+      <div class="step-desc">Your audiobook is ready — download it instantly as an MP3 file.</div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+
+  /* ── Tab switching ───────────────────────────────────────── */
+  const tabs         = document.querySelectorAll('#inputTabs .tab');
+  const paneIds      = ['pane-paste', 'pane-upload'];
+  const activeTabIn  = document.getElementById('activeTabInput');
+  const titlePaste   = document.getElementById('titlePaste');
+  const titleUpload  = document.getElementById('titleUpload');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const target = tab.dataset.tab;
+      paneIds.forEach(id => {
+        document.getElementById(id).style.display = (id === target) ? '' : 'none';
+      });
+      activeTabIn.value = (target === 'pane-upload') ? 'upload' : 'paste';
+    });
+  });
+
+  /* ── Sync title fields ───────────────────────────────────── */
+  // Keep both title fields in sync so whichever pane is active sends the right value
+  titlePaste.addEventListener('input', () => { titleUpload.value = titlePaste.value; });
+  titleUpload.addEventListener('input', () => { titlePaste.value = titleUpload.value; });
+  // Only one name="title" field should submit — we use a hidden relay
+  // Actually: titleUpload has name="title_upload"; server should read based on active_tab
+  // But to keep field names intact, ensure "title" is always submitted:
+  titleUpload.name = 'title';
+
+  /* ── Character counter ───────────────────────────────────── */
+  const textarea  = document.getElementById('textInput');
+  const charCount = document.getElementById('charCount');
+  const MAX_CHARS = 50000;
+
+  textarea.addEventListener('input', () => {
+    const n = textarea.value.length;
+    charCount.textContent = n.toLocaleString() + ' / 50 000';
+    if (n > MAX_CHARS) {
+      charCount.className = 'chip chip-red';
+    } else if (n > MAX_CHARS * 0.9) {
+      charCount.className = 'chip chip-orange';
+    } else {
+      charCount.className = 'chip chip-orange';
+    }
+  });
+
+  /* ── File name display ───────────────────────────────────── */
+  const fileInput  = document.getElementById('fileInput');
+  const uploadText = document.getElementById('uploadText');
+  fileInput.addEventListener('change', () => {
+    uploadText.textContent = fileInput.files[0]
+      ? fileInput.files[0].name
+      : 'Drag & drop or tap to choose — PDF, DOCX or TXT';
+  });
+
+  /* ── Form submit / loading state ────────────────────────── */
+  const form        = document.getElementById('audioForm');
+  const generateBtn = document.getElementById('generateBtn');
+  const progressBar = document.getElementById('progressBar');
+  const progressFill= document.getElementById('progressFill');
+  const progressSt  = document.getElementById('progressStatus');
+  let   progressInt = null;
+
+  form.addEventListener('submit', () => {
+    if (typeof setLoading === 'function') {
+      setLoading(generateBtn, true, '⏳ Generating…');
+    } else {
+      generateBtn.disabled = true;
+      generateBtn.textContent = '⏳ Generating…';
+    }
+
+    // Show and animate progress bar
+    progressBar.style.display = '';
+    progressSt.textContent = 'Sending to Google TTS…';
+    let pct = 0;
+    progressInt = setInterval(() => {
+      if (pct < 85) {
+        pct += Math.random() * 4 + 1;
+        progressFill.style.width = Math.min(pct, 85) + '%';
+      }
+    }, 600);
+  });
+
+  /* ── Poll pending jobs ───────────────────────────────────── */
+  const pendingIds = [];
+  document.querySelectorAll('[id^="job-"]').forEach(el => {
+    const chip = el.querySelector('.chip');
+    if (chip && chip.classList.contains('chip-orange')) {
+      pendingIds.push(el.id.replace('job-', ''));
+    }
+  });
+
+  function updateJobRow(id, data) {
+    const row = document.getElementById('job-' + id);
+    if (!row) return;
+
+    const iconEl    = row.querySelector('.list-item-icon');
+    const subEl     = row.querySelector('.list-item-sub');
+    const actionsEl = row.querySelector('.list-item-actions');
+
+    if (data.status === 'done') {
+      iconEl.innerHTML = '🎵';
+      subEl.innerHTML  = '<span class="chip chip-green">Done</span>';
+
+      // Insert download button before delete form
+      const deleteForm = actionsEl.querySelector('form');
+      const dlA = document.createElement('a');
+      dlA.className   = 'btn btn-sm btn-green';
+      dlA.href        = '/audio/download/' + encodeURIComponent(data.filename);
+      dlA.title       = 'Download MP3';
+      dlA.textContent = '⬇ MP3';
+      actionsEl.insertBefore(dlA, deleteForm);
+
+      if (typeof showToast === 'function')
+        showToast('Audiobook ready — click ⬇ MP3 to download!', 'success');
+
+    } else if (data.status === 'error') {
+      iconEl.innerHTML = '❌';
+      subEl.innerHTML  = '<span class="chip chip-red">Error</span>';
+
+      if (data.error) {
+        const content = row.querySelector('.list-item-content');
+        let errDiv = content.querySelector('.job-error-msg');
+        if (!errDiv) {
+          errDiv = document.createElement('div');
+          errDiv.className = 'job-error-msg';
+          content.appendChild(errDiv);
+        }
+        errDiv.textContent = data.error;
+      }
+      if (typeof showToast === 'function')
+        showToast('TTS error — see job list for details', 'error');
+    }
+  }
+
+  function pollJobs(ids) {
+    if (!ids.length) return;
+    ids.forEach(id => {
+      fetch('/audio/status/' + id)
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === 'pending') return;
+          updateJobRow(id, data);
+          const idx = ids.indexOf(id);
+          if (idx !== -1) ids.splice(idx, 1);
+        })
+        .catch(() => {});
+    });
+    if (ids.length) setTimeout(() => pollJobs(ids), 2000);
+  }
+
+  if (pendingIds.length) setTimeout(() => pollJobs(pendingIds), 2000);
+
+})();
+</script>
+{% endblock %}

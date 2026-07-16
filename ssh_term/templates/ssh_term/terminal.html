@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}SSH Terminal{% endblock %}
+{% block body_class %}app-ssh{% endblock %}
+{% block header_icon %}🖥️{% endblock %}
+{% block header_title %}SSH Terminal{% endblock %}
+{% block back_btn %}{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css">
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/socket.io/dist/socket.io.min.js"></script>
+<style>
+  .app-content { padding: 0 !important; overflow: hidden !important; }
+  #terminal-wrap {
+    height: calc(100vh - var(--header-h) - var(--fnav-h) - var(--safe-top) - var(--safe-bottom));
+    background: #000; display: flex; flex-direction: column;
+  }
+  #status-bar {
+    background: #0d1117; border-bottom: 1px solid #30363d;
+    padding: 8px 16px; display: flex; align-items: center; gap: 12px;
+    font-size: 13px; font-family: monospace; flex-shrink: 0;
+  }
+  #terminal { flex: 1; overflow: hidden; }
+  .xterm-viewport { background: #000 !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="terminal-wrap">
+  <div id="status-bar">
+    <span id="conn-status" class="status status-pending">Connecting…</span>
+    <span id="conn-host" style="color:#58a6ff;font-weight:600"></span>
+    <span style="flex:1"></span>
+    <button onclick="disconnectSSH()" class="btn btn-sm btn-danger">Disconnect</button>
+  </div>
+  <div id="terminal"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const host = params.get('host') || '';
+  const user = params.get('user') || 'root';
+  const port = parseInt(params.get('port') || '22', 10);
+  const password = sessionStorage.getItem('sshPass');
+
+  // Clear password from session storage immediately after reading
+  sessionStorage.removeItem('sshPass');
+
+  if (!password) {
+    alert('No password found. Please reconnect.');
+    window.location.href = '/ssh';
+    return;
+  }
+
+  // Init xterm
+  const term = new Terminal({
+    theme: {
+      background: '#000',
+      foreground: '#c9d1d9',
+      cursor: '#58a6ff',
+    },
+    fontFamily: 'monospace',
+    fontSize: 14,
+    cursorBlink: true,
+  });
+
+  const fitAddon = new FitAddon.FitAddon();
+  term.loadAddon(fitAddon);
+  term.open(document.getElementById('terminal'));
+  fitAddon.fit();
+
+  // Update status bar host
+  document.getElementById('conn-host').textContent = user + '@' + host + ':' + port;
+
+  // Connect socket.io
+  const socket = io();
+
+  socket.emit('ssh_connect', { host, port, username: user, password });
+
+  socket.on('ssh_connected', function () {
+    const statusEl = document.getElementById('conn-status');
+    statusEl.className = 'status status-success';
+    statusEl.textContent = 'Connected';
+    fitAddon.fit();
+  });
+
+  socket.on('ssh_output', function (data) {
+    term.write(data);
+  });
+
+  socket.on('ssh_error', function (msg) {
+    term.write('\r\n\x1b[31mError: ' + msg + '\x1b[0m\r\n');
+    const statusEl = document.getElementById('conn-status');
+    statusEl.className = 'status status-error';
+    statusEl.textContent = 'Error';
+  });
+
+  socket.on('disconnect', function () {
+    const statusEl = document.getElementById('conn-status');
+    if (!statusEl.classList.contains('status-error')) {
+      statusEl.className = 'status status-pending';
+      statusEl.textContent = 'Disconnected';
+    }
+  });
+
+  // Send terminal input to server
+  term.onData(function (data) {
+    socket.emit('ssh_input', { input: data });
+  });
+
+  // Resize handling
+  const resizeObserver = new ResizeObserver(function () {
+    fitAddon.fit();
+    socket.emit('ssh_resize', { cols: term.cols, rows: term.rows });
+  });
+  resizeObserver.observe(document.getElementById('terminal'));
+
+  window.disconnectSSH = function () {
+    socket.disconnect();
+    window.location.href = '/ssh';
+  };
+})();
+</script>
+{% endblock %}

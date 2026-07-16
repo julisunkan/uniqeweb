@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}SSH Terminal{% endblock %}
+{% block body_class %}app-ssh{% endblock %}
+{% block header_icon %}🖥️{% endblock %}
+{% block header_title %}SSH Terminal{% endblock %}
+{% block back_btn %}{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <div class="hero-title">🖥️ SSH Terminal</div>
+  <div class="hero-sub">Connect to any remote server directly from your browser. Credentials stay in your session — never logged.</div>
+</div>
+
+<div class="content-grid">
+  <!-- LEFT: Connection Card -->
+  <div class="card card-green card-glow">
+    <div class="card-title">🔌 New Connection</div>
+
+    <div class="input-group">
+      <label class="input-label">Hostname / IP</label>
+      <input class="input" id="hostInput" type="text" placeholder="192.168.1.1 or server.example.com">
+    </div>
+
+    <div class="input-row">
+      <div class="input-group" style="flex:1">
+        <label class="input-label">Username</label>
+        <input class="input" id="userInput" type="text" value="root">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Port</label>
+        <input class="input" id="portInput" type="number" value="22" style="width:90px">
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Password</label>
+      <input class="input" id="passInput" type="password" autocomplete="current-password">
+    </div>
+
+    <button class="btn btn-primary btn-full" id="connectBtn" onclick="doConnect()">🔗 Connect via SSH</button>
+
+    <div class="card" style="margin-top:16px;background:color-mix(in srgb,var(--green) 8%,var(--surface));border-color:color-mix(in srgb,var(--green) 25%,transparent)">
+      🔒 Credentials are stored only in your browser's session storage and never sent in plain-text URLs. Connections are relayed end-to-end via WebSocket.
+    </div>
+  </div>
+
+  <!-- RIGHT: Info Cards -->
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <div class="card card-yellow">
+      <div class="card-title">⚡ Features</div>
+      <ul class="list-item" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
+        <li class="list-item"><span class="list-item-icon">✦</span><span class="list-item-content"><span class="list-item-title">Full xterm.js terminal</span></span></li>
+        <li class="list-item"><span class="list-item-icon">✦</span><span class="list-item-content"><span class="list-item-title">Resize-aware PTY</span></span></li>
+        <li class="list-item"><span class="list-item-icon">✦</span><span class="list-item-content"><span class="list-item-title">Password auth</span></span></li>
+        <li class="list-item"><span class="list-item-icon">✦</span><span class="list-item-content"><span class="list-item-title">WebSocket relay</span></span></li>
+        <li class="list-item"><span class="list-item-icon">✦</span><span class="list-item-content"><span class="list-item-title">No plugins needed</span></span></li>
+      </ul>
+    </div>
+
+    <div class="card card-blue">
+      <div class="card-title">📋 Recent Connections</div>
+      <div id="recentList">
+        <div class="empty-state" style="padding:16px 0">
+          <div class="empty-state-icon">🖥️</div>
+          <div class="empty-state-title">No recent connections</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const MAX_RECENT = 5;
+  const STORAGE_KEY = 'sshRecent';
+
+  function getRecent() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+    catch (e) { return []; }
+  }
+
+  function saveRecent(host, user, port) {
+    let recent = getRecent().filter(r => !(r.host === host && r.user === user && r.port === port));
+    recent.unshift({ host, user, port });
+    if (recent.length > MAX_RECENT) recent = recent.slice(0, MAX_RECENT);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(recent));
+  }
+
+  function renderRecent() {
+    const recent = getRecent();
+    const container = document.getElementById('recentList');
+    if (!recent.length) {
+      container.innerHTML = '<div class="empty-state" style="padding:16px 0"><div class="empty-state-icon">🖥️</div><div class="empty-state-title">No recent connections</div></div>';
+      return;
+    }
+    container.innerHTML = recent.map(r => `
+      <div class="chip chip-accent" style="cursor:pointer;margin:4px 4px 4px 0;display:inline-flex;align-items:center;gap:6px"
+           onclick="prefill(${JSON.stringify(r.host)}, ${JSON.stringify(r.user)}, ${JSON.stringify(String(r.port))})">
+        🖥️ ${r.user}@${r.host}:${r.port}
+      </div>
+    `).join('');
+  }
+
+  window.prefill = function(host, user, port) {
+    document.getElementById('hostInput').value = host;
+    document.getElementById('userInput').value = user;
+    document.getElementById('portInput').value = port;
+    document.getElementById('passInput').focus();
+  };
+
+  window.doConnect = function() {
+    const host = document.getElementById('hostInput').value.trim();
+    const user = document.getElementById('userInput').value.trim();
+    const port = parseInt(document.getElementById('portInput').value, 10) || 22;
+    const pass = document.getElementById('passInput').value;
+
+    if (!host) { alert('Please enter a hostname or IP address.'); return; }
+    if (!pass) { alert('Please enter a password.'); return; }
+
+    sessionStorage.setItem('sshPass', pass);
+    sessionStorage.setItem('sshHost', host);
+    sessionStorage.setItem('sshUser', user);
+    sessionStorage.setItem('sshPort', String(port));
+
+    saveRecent(host, user, port);
+
+    const params = new URLSearchParams({ host, user, port });
+    window.location.href = '/ssh/terminal?' + params.toString();
+  };
+
+  renderRecent();
+})();
+</script>
+{% endblock %}

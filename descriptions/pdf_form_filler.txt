@@ -1,0 +1,81 @@
+================================================================================
+  PDF FORM FILLER — App Description, Features & Keywords
+================================================================================
+
+APP NAME
+  PDF Form Filler
+
+SHORT DESCRIPTION (1–2 sentences)
+  Upload any PDF with fillable form fields, complete them directly in your
+  browser, and download the finished file — no Adobe Acrobat, no plugins,
+  no installation required. For PDFs without form fields, add a text
+  annotation overlay to any page.
+
+FULL DESCRIPTION
+  The PDF Form Filler is a lightweight web tool designed for anyone who
+  regularly deals with PDF forms: tax documents, applications, contracts,
+  surveys, registration forms, and more. Instead of printing, hand-writing,
+  and re-scanning, you can fill everything digitally in seconds.
+
+  When you upload a PDF, the app instantly detects all AcroForm fields
+  (text boxes, checkboxes, radio buttons, dropdowns) using the pypdf library.
+  It presents each field as a labelled input in a clean two-column form.
+  You fill in the values, click "Download Filled PDF", and the completed
+  file is sent directly to your browser as a download — nothing is stored
+  permanently on the server.
+
+  For PDFs that have no fillable form fields (flat or scanned PDFs), the
+  tool switches to an annotation mode where you can enter a text string that
+  is overlaid on the first page using ReportLab — a useful workaround for
+  adding a signature line, reference number, or date stamp.
+
+HOW IT WORKS
+  1. Upload your PDF file using the drag-and-drop area or file picker.
+  2. The app analyses the document and detects all form fields automatically.
+  3. Fill in each labelled field in the browser form.
+  4. Click "Download Filled PDF" — the server processes and returns the file.
+  5. Your filled PDF is downloaded with "_filled" appended to the filename.
+
+FEATURES
+  ● Automatic AcroForm field detection (text, checkboxes, radio, select)
+  ● Dynamic field forms — one input per detected field, correctly labelled
+  ● Two-column responsive layout for long field lists
+  ● Annotation overlay mode for flat PDFs without form fields (ReportLab)
+  ● Server-side PDF generation and download (no client-side blobs)
+  ● Upload history — re-access and re-fill previously uploaded PDFs
+  ● Admin-configurable max upload file size
+  ● Secure file storage with UUID-based filenames
+  ● No user account required; files stored temporarily on server
+  ● Mobile-responsive interface with drag-and-drop upload area
+  ● Instant redirect to the fill form after upload (no separate step)
+
+SUPPORTED FILE TYPES
+  ● .pdf (fillable AcroForm PDFs and flat/scanned PDFs)
+
+OUTPUT
+  ● Filled PDF downloaded directly via the browser as attachment
+  ● Filename format: <original_name>_filled.pdf
+
+LIMITATIONS
+  ● Scanned PDFs with no embedded text fields use annotation overlay only
+  ● Digital signatures are not supported
+  ● Complex form logic (JavaScript inside PDFs) is not executed
+  ● Checkboxes are filled with string values via pypdf's field update API
+
+USE CASES
+  ● Filling government and tax forms (W-9, I-9, etc.)
+  ● Completing job applications, rental agreements, or contracts
+  ● Digitally signing and dating PDF templates
+  ● Bulk-processing repetitive form fields
+  ● Accessibility: enabling form completion without printing
+
+TECH STACK
+  Flask · pypdf · ReportLab · SQLite · Python
+
+KEYWORDS
+  PDF form filler, fillable PDF, AcroForm, PDF editor online, fill PDF
+  in browser, complete PDF form, PDF annotation, PDF download, no install
+  PDF editor, pypdf, ReportLab, PDF form tool, digital form completion,
+  tax form filler, contract PDF editor, Flask PDF app, PDF field detection
+
+================================================================================

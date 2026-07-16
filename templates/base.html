@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#080b14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>{% block title %}App Suite{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+<div class="app-shell">
+
+  <!-- Header -->
+  <header class="app-header">
+    {% block back_btn %}{% endblock %}
+    <span class="app-icon" aria-hidden="true">{% block header_icon %}⚡{% endblock %}</span>
+    <span class="app-title">{% block header_title %}App{% endblock %}</span>
+    {% block header_right %}{% endblock %}
+  </header>
+
+  <!-- Main content -->
+  <main class="app-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="toast {{ category }}"
+               style="position:static;pointer-events:auto;margin-bottom:14px;max-width:100%">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+</div><!-- /.app-shell -->
+
+
+<div id="toastContainer"></div>
+<script src="{{ url_for('static', filename='js/mobile.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

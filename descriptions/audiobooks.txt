@@ -1,0 +1,76 @@
+================================================================================
+  AUDIOBOOKS GENERATOR — App Description, Features & Keywords
+================================================================================
+
+APP NAME
+  Audiobooks Generator
+
+SHORT DESCRIPTION (1–2 sentences)
+  Convert any text, PDF, DOCX, or TXT file into a downloadable MP3 audiobook
+  in seconds. Powered by Google Text-to-Speech (gTTS), this tool lets you
+  listen to documents, articles, and notes hands-free — no account required.
+
+FULL DESCRIPTION
+  The Audiobooks Generator is a browser-based tool that transforms written
+  content into high-quality audio files you can download and listen to
+  anywhere. Whether you're a student who wants to review lecture notes on
+  the go, a professional catching up on reports during a commute, or anyone
+  who finds listening easier than reading, this tool does the heavy lifting.
+
+  Simply paste your text directly into the editor, or upload a supported
+  document (PDF, Word DOCX, or plain TXT). The app extracts the text
+  automatically, sends it to Google TTS for speech synthesis, and delivers
+  a finished MP3 file you can download with one click.
+
+  Jobs are processed in the background — you can close the tab and come back
+  later, or watch the status update live without refreshing the page. Each
+  job is listed in your history with download and delete controls.
+
+HOW IT WORKS
+  1. Paste text into the editor OR upload a PDF / DOCX / TXT file.
+  2. Enter an optional title for your audiobook.
+  3. Click "Generate Audiobook" — the job starts immediately in the background.
+  4. The status updates live (no page refresh needed).
+  5. When complete, click "⬇ MP3" to download your audio file.
+
+FEATURES
+  ● Text input — paste up to 50,000 characters directly
+  ● File upload — supports PDF, Microsoft Word (.docx), and plain text (.txt)
+  ● Automatic text extraction from PDF (PyMuPDF) and DOCX (python-docx)
+  ● Background processing — jobs run server-side, non-blocking
+  ● Live status polling — UI updates automatically every 2 seconds
+  ● Direct server-side MP3 download (no browser blobs)
+  ● Job history — see all past audiobooks with status badges
+  ● Per-job delete — remove individual jobs and their files
+  ● Character counter with visual warning near the limit
+  ● Admin-configurable TTS language (any BCP-47 code: en, es, fr, de, ja…)
+  ● Admin-configurable max character limit
+  ● Mobile-responsive, dark-themed interface
+
+SUPPORTED FILE TYPES
+  ● .pdf  (text-based; scanned PDFs without OCR will produce limited output)
+  ● .docx (Microsoft Word)
+  ● .txt  (UTF-8 plain text)
+
+LIMITATIONS
+  ● Scanned/image-only PDFs are not supported (no OCR)
+  ● gTTS requires an internet connection to the Google TTS API
+  ● Audio quality depends on Google TTS; no SSML or voice selection
+
+USE CASES
+  ● Students listening to study notes or textbook chapters
+  ● Accessibility: converting documents for visually impaired users
+  ● Language learners hearing correct pronunciation of text
+  ● Professionals listening to reports or emails during commutes
+  ● Writers listening back to their own drafts to catch errors
+
+TECH STACK
+  Flask · gTTS · PyMuPDF · python-docx · SQLite · Python threading
+
+KEYWORDS
+  text to speech, TTS, audiobook generator, MP3 converter, PDF to audio,
+  DOCX to audio, Google TTS, accessibility tool, listen to documents,
+  audio notes, speech synthesis, document reader, gTTS, Flask TTS app,
+  hands-free reading, convert text to MP3, study audio, podcast from text
+
+================================================================================

@@ -1,0 +1,97 @@
+================================================================================
+  EMAIL SIGNATURE GENERATOR — App Description, Features & Keywords
+================================================================================
+
+APP NAME
+  Email Signature Generator
+
+SHORT DESCRIPTION (1–2 sentences)
+  Design a beautiful, professional email signature in minutes with a live
+  preview, three template styles, custom accent colours, font selection, and
+  optional AI-generated taglines powered by Groq. Export as a ready-to-paste
+  HTML file compatible with Gmail, Outlook, Apple Mail, and any HTML-capable
+  email client.
+
+FULL DESCRIPTION
+  The Email Signature Generator is a visual, no-code builder for creating
+  professional HTML email signatures. Unlike generic signature generators, it
+  offers a live-updating preview iframe that reflects every change you make
+  in real time — what you see is exactly what your recipients will see.
+
+  Fill in your personal details (name, job title, company), contact information
+  (email, phone, website, LinkedIn, Twitter), choose from three signature
+  templates, pick an accent colour from six presets, select your preferred
+  font, and optionally generate a professional tagline using Groq AI. When
+  you're happy with the result, download the HTML file and paste it straight
+  into your email client's signature settings — or click "Copy HTML" to grab
+  the raw markup directly to the clipboard.
+
+  All three signature templates are designed for real-world compatibility:
+  they use inline CSS only (no external stylesheets), which is essential for
+  consistent rendering across email clients that strip `<style>` tags.
+
+HOW IT WORKS
+  1. Fill in your name, title, company, and contact details on the left.
+  2. Choose a template style (Modern, Classic, or Minimal).
+  3. Select an accent colour and font from the style options.
+  4. Optionally click "Generate with AI" to get a Groq-powered tagline.
+  5. Watch the live preview update in real time on the right.
+  6. Click "Copy HTML" to copy the signature to your clipboard, or
+     "Download .html" to save the file — then paste it into your email client.
+
+TEMPLATES
+  ● Modern   — Left accent bar in the chosen colour, name + title block, contact row.
+  ● Classic  — Coloured header banner with name/title; two-column contact + social.
+  ● Minimal  — Single-line header with pipe separators; compact, elegant contact row.
+
+FEATURES
+  ● Live iframe preview — updates 400ms after every keystroke (debounced)
+  ● Three distinct, production-ready HTML template styles
+  ● Six preset accent colours: red, orange, blue, green, yellow, purple
+  ● Font selector: Georgia, Arial, Verdana, Trebuchet MS, Times New Roman
+  ● LinkedIn and Twitter social links (formatted automatically)
+  ● AI tagline generator using Groq llama-3.3-70b-versatile (optional)
+  ● Copy HTML to clipboard with one click
+  ● Server-side HTML file download (Content-Disposition: attachment)
+  ● Inline CSS only — compatible with Gmail, Outlook, Apple Mail, and more
+  ● Admin-configurable default template and accent colour
+  ● No user account or sign-up required
+  ● Mobile-responsive two/three-column builder layout
+
+AI TAGLINE GENERATION
+  When GROQ_API_KEY is configured, the "Generate with AI" button sends your
+  name, job title, company, and style preference to Groq's llama-3.3-70b-versatile
+  model, which returns a single concise tagline (max 12 words). The tagline
+  fills the tagline input and immediately updates the live preview.
+
+EMAIL CLIENT COMPATIBILITY
+  ● Gmail (web) — paste the HTML into the signature settings
+  ● Outlook (Windows/Mac) — use the "Edit signature" → HTML source
+  ● Apple Mail — paste via the signature editor
+  ● Thunderbird — use the HTML signature option
+  ● Any client supporting HTML signatures
+
+LIMITATIONS
+  ● Logo/image embedding is not currently supported
+  ● AI taglines require a valid GROQ_API_KEY configured in admin settings
+  ● Email client rendering varies; test in your target client after pasting
+
+USE CASES
+  ● Sales and marketing professionals building branded email signatures
+  ● Freelancers presenting a professional identity in client emails
+  ● Job seekers adding links to LinkedIn profiles and portfolios
+  ● Teams standardising signature templates across the organisation
+  ● Anyone wanting a clean, professional sign-off without coding
+
+TECH STACK
+  Flask · Groq API (llama-3.3-70b-versatile) · Inline HTML/CSS · Python
+
+KEYWORDS
+  email signature generator, HTML email signature, email signature builder,
+  professional email signature, Gmail signature, Outlook signature,
+  email signature template, branded email footer, AI signature, Groq AI,
+  tagline generator, email design tool, HTML signature download, copy HTML,
+  contact signature, social media signature, Flask email tool, modern email
+  signature, minimal email signature, classic email signature
+
+================================================================================

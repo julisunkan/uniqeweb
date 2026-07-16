@@ -1,0 +1,84 @@
+================================================================================
+  SSH TERMINAL — App Description, Features & Keywords
+================================================================================
+
+APP NAME
+  SSH Terminal (Browser SSH Client)
+
+SHORT DESCRIPTION (1–2 sentences)
+  Connect to any SSH server directly from your web browser — no client software,
+  no local terminal, no plugins required. Full xterm.js terminal with real-time
+  WebSocket communication and a resize-aware PTY session.
+
+FULL DESCRIPTION
+  The SSH Terminal provides a complete, production-quality remote shell
+  experience inside an ordinary web browser. Using Paramiko on the server side
+  and xterm.js on the frontend, it establishes a genuine SSH connection with a
+  proper pseudo-terminal (PTY) and streams input/output in real time over
+  Socket.IO WebSockets.
+
+  This is not an emulation or a simplified shell simulator — it is a real SSH
+  session. You get full terminal capabilities: colour output, interactive
+  programs (vim, htop, python REPL), tab completion, command history, and
+  proper signal handling. The terminal automatically adapts to the size of the
+  browser window via a ResizeObserver that sends PTY resize events to the
+  server.
+
+  Credentials are handled securely: the password is stored only in the
+  browser's sessionStorage and is cleared immediately after use. It is never
+  included in a URL or persisted anywhere. Recent connection host/user/port
+  details (never passwords) are saved to localStorage for quick re-connect.
+
+HOW IT WORKS
+  1. Enter your server's hostname/IP, username, port, and password.
+  2. Click "Connect via SSH" — a WebSocket session is established server-side.
+  3. A full xterm.js terminal opens and connects to your PTY session.
+  4. Type commands; output streams back in real time.
+  5. Click "Disconnect" or close the tab to end the session.
+
+FEATURES
+  ● Full SSH session via Paramiko — not emulated, real PTY
+  ● xterm.js 5 with FitAddon for adaptive terminal sizing
+  ● Real-time bidirectional I/O over Socket.IO WebSocket
+  ● Automatic PTY resize via ResizeObserver → ssh_resize event
+  ● Colour terminal output (ANSI/VT100 codes fully supported)
+  ● Supports interactive programs: vim, nano, htop, top, python, etc.
+  ● Password stored in sessionStorage only; cleared after connection
+  ● Password never appears in URL query parameters
+  ● Recent connections saved to localStorage (host + user + port, no password)
+  ● Quick-connect from recent connections — prefills the form
+  ● Status bar showing connection state and remote host
+  ● One-click Disconnect button
+  ● Admin-configurable max concurrent sessions
+  ● Mobile-responsive connection form; terminal works on tablets
+
+SECURITY NOTES
+  ● Password is stored only in browser sessionStorage (tab-scoped, ephemeral)
+  ● Credentials never appear in URLs, logs, or persistent storage
+  ● Server acts as a relay — connection is made from the server, not the browser
+  ● SSH host key verification follows Paramiko defaults (auto-add policy)
+  ● No credential is written to the admin database or audit log
+
+LIMITATIONS
+  ● Only password authentication is supported (no SSH keys via browser)
+  ● Host key verification uses AutoAddPolicy — not suitable for high-security use
+  ● The Replit environment may have firewall rules limiting outbound SSH
+  ● Very long-running sessions may be interrupted if the server restarts
+
+USE CASES
+  ● Developers connecting to cloud instances from a locked-down machine
+  ● Quick server administration from any device with a browser
+  ● Accessing lab or classroom servers without installing software
+  ● Emergency remote administration from a phone or tablet
+  ● Running commands on a Raspberry Pi or home server remotely
+
+TECH STACK
+  Flask · Flask-SocketIO · eventlet · Paramiko · xterm.js 5 · FitAddon
+
+KEYWORDS
+  browser SSH client, web SSH, SSH in browser, xterm.js, Paramiko SSH,
+  WebSocket SSH, remote terminal, web terminal, browser terminal, SSH relay,
+  Flask SSH app, online SSH client, PTY browser, cloud shell, SSH without app,
+  SSH from phone, SSH WebSocket, remote shell, Socket.IO SSH
+
+================================================================================
