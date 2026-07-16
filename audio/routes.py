@@ -41,16 +41,16 @@ init_db()
 
 # ── Background TTS worker ─────────────────────────────────────────────────────
 def _run_tts(job_id, text, title):
-    """Runs in a real OS thread — NOT an eventlet green thread.
-    Uses edge-tts (Microsoft Edge neural TTS) — produces MP3 output.
-    Requires internet access. Voice is configured via admin settings
-    (audio_tts_lang). Accepts full edge-tts voice names
-    (e.g. 'en-US-AriaNeural') or bare BCP-47 language codes ('en', 'es', …).
+    """Runs in a background thread.
+    Uses edge-tts (Microsoft Edge neural TTS) via a subprocess so gevent's
+    monkey-patching never interferes with asyncio/aiohttp networking.
+    Accepts full edge-tts voice names (e.g. 'en-US-AriaNeural') or bare
+    BCP-47 language codes ('en', 'es', …).
     """
-    import asyncio
-    import edge_tts
+    import sys
+    import subprocess
+    import tempfile
 
-    # Map bare language codes → a default edge-tts voice
     _LANG_TO_VOICE = {
         'en': 'en-US-AriaNeural',
         'es': 'es-ES-AlvaroNeural',
@@ -64,28 +64,44 @@ def _run_tts(job_id, text, title):
         'ar': 'ar-EG-SalmaNeural',
     }
 
+    # Inline script executed by a fresh Python interpreter — no gevent patches
+    _TTS_SCRIPT = (
+        "import asyncio, edge_tts, sys\n"
+        "text  = open(sys.argv[1], encoding='utf-8').read()\n"
+        "voice = sys.argv[2]\n"
+        "out   = sys.argv[3]\n"
+        "asyncio.run(edge_tts.Communicate(text, voice).save(out))\n"
+    )
+
     db = sqlite3.connect(DB_PATH)
     try:
         max_chars = int(get_setting('audio_max_chars', '50000'))
         voice     = (get_setting('audio_tts_lang', 'en-US-AriaNeural') or
                      'en-US-AriaNeural').strip()
-
-        # Accept bare language codes as a convenience shorthand
-        voice = _LANG_TO_VOICE.get(voice.lower(), voice)
+        voice     = _LANG_TO_VOICE.get(voice.lower(), voice)
 
         capped = text[:max_chars]
         fname  = f"{job_id}.mp3"
         fpath  = os.path.join(OUTPUTS, fname)
 
-        async def _synthesize():
-            communicate = edge_tts.Communicate(capped, voice)
-            await communicate.save(fpath)
+        # Write text to a temp file to avoid command-line length limits
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt',
+                                         delete=False, encoding='utf-8') as f:
+            f.write(capped)
+            tmppath = f.name
 
-        loop = asyncio.new_event_loop()
         try:
-            loop.run_until_complete(_synthesize())
+            result = subprocess.run(
+                [sys.executable, '-c', _TTS_SCRIPT, tmppath, voice, fpath],
+                timeout=120, capture_output=True, text=True
+            )
+            if result.returncode != 0:
+                raise RuntimeError(result.stderr.strip() or 'edge-tts failed')
         finally:
-            loop.close()
+            try:
+                os.unlink(tmppath)
+            except OSError:
+                pass
 
         db.execute(
             "UPDATE jobs SET status='done', filename=? WHERE id=?",
