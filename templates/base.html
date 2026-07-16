@@ -1,12 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#080b14">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>{% block title %}App Suite{% endblock %}</title>
+  <title>{% block title %}{{ t.app_short }}{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}">
+  <style>
+    .lang-switcher {
+      display: flex;
+      gap: 4px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .lang-btn {
+      display: inline-block;
+      padding: 4px 9px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .03em;
+      text-decoration: none;
+      color: var(--muted, #8b929e);
+      border: 1px solid transparent;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    .lang-btn:hover { color: var(--text, #e6eaf0); }
+    .lang-btn.active {
+      color: var(--text, #e6eaf0);
+      border-color: rgba(255,255,255,.18);
+      background: rgba(255,255,255,.07);
+    }
+  </style>
   {% block head %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -17,8 +43,12 @@
   <header class="app-header">
     {% block back_btn %}{% endblock %}
     <span class="app-icon" aria-hidden="true">{% block header_icon %}⚡{% endblock %}</span>
-    <span class="app-title">{% block header_title %}App{% endblock %}</span>
+    <span class="app-title">{% block header_title %}{{ t.app_short }}{% endblock %}</span>
     {% block header_right %}{% endblock %}
+    <nav class="lang-switcher" aria-label="{{ t.lang_switch_label }}">
+      <a href="/set-lang/en" class="lang-btn{% if lang == 'en' %} active{% endif %}">EN</a>
+      <a href="/set-lang/ru" class="lang-btn{% if lang == 'ru' %} active{% endif %}">RU</a>
+    </nav>
   </header>
 
   <!-- Main content -->
@@ -38,8 +68,28 @@
 
 </div><!-- /.app-shell -->
 
-
 <div id="toastContainer"></div>
+
+<!-- Global i18n strings for JS -->
+<script>
+window.I18N = {{ {
+  'done':             t.done,
+  'error':            t.error,
+  'processing':       t.processing,
+  'sure':             t.sure,
+  'yes':              t.yes,
+  'no':               t.no,
+  'download_audio':   t.download_audio,
+  'connected':        t.js_connected,
+  'js_error':         t.js_error,
+  'disconnected':     t.js_disconnected,
+  'no_password':      t.js_no_password,
+  'conn_closed':      t.js_connection_closed,
+  'conn_lost':        t.js_connection_lost,
+  'shuffled':         t.js_shuffled
+} | tojson }};
+</script>
+
 <script src="{{ url_for('static', filename='js/mobile.js') }}"></script>
 {% block scripts %}{% endblock %}
 </body>

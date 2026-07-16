@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
 
-{% block title %}AI Flashcard Generator{% endblock %}
+{% block title %}{{ t.flash_page_title }}{% endblock %}
 {% block body_class %}app-flash{% endblock %}
 {% block header_icon %}🃏{% endblock %}
-{% block header_title %}Flashcard Generator{% endblock %}
+{% block header_title %}{{ t.flash_header }}{% endblock %}
 {% block back_btn %}{% endblock %}
 
 {% block content %}
 
 <!-- Hero -->
 <div class="hero">
-  <div class="hero-title">🃏 AI Flashcard Generator</div>
-  <div class="hero-sub">Paste your notes or upload a PDF — Groq AI creates interactive study flashcards in seconds.</div>
+  <div class="hero-title">{{ t.flash_hero_title }}</div>
+  <div class="hero-sub">{{ t.flash_hero_sub }}</div>
 </div>
 
 <!-- Three-column grid -->
@@ -20,30 +20,30 @@
   <!-- LEFT: Create Deck (col-span-2) -->
   <div class="col-span-2">
     <div class="card card-yellow card-glow">
-      <div class="card-title">✨ Create New Deck</div>
+      <div class="card-title">{{ t.create_new_deck }}</div>
 
       <form id="generateForm" action="/flash/generate" method="POST" enctype="multipart/form-data">
         <div class="input-row" style="margin-bottom:16px;">
           <div class="input-group" style="flex:1;">
-            <label class="input-label">Deck Title</label>
+            <label class="input-label">{{ t.deck_title }}</label>
             <input class="input" type="text" name="title" placeholder="e.g. Biology Chapter 5" required>
           </div>
           <div class="input-group" style="width:auto;">
-            <label class="input-label">Number of Cards</label>
+            <label class="input-label">{{ t.num_cards }}</label>
             <input class="input" type="number" name="card_count" min="5" max="50" value="15" style="width:100px;">
           </div>
         </div>
 
         <!-- Tabs -->
         <div class="tabs" style="margin-bottom:16px;">
-          <div class="tab active" data-tab="pane-text">Paste Text</div>
-          <div class="tab" data-tab="pane-upload">Upload File</div>
+          <div class="tab active" data-tab="pane-text">{{ t.paste_text }}</div>
+          <div class="tab" data-tab="pane-upload">{{ t.upload_file }}</div>
         </div>
 
         <!-- Paste pane -->
         <div id="pane-text" style="margin-bottom:16px;">
           <div class="input-group">
-            <textarea class="textarea" name="text" rows="8" placeholder="Paste your notes, article, textbook excerpt…"></textarea>
+            <textarea class="textarea" name="text" rows="8" placeholder="{{ t.paste_placeholder }}"></textarea>
           </div>
         </div>
 
@@ -52,18 +52,18 @@
           <label class="upload-area">
             <input type="file" name="file" accept=".pdf,.docx,.txt">
             <div class="upload-icon">📚</div>
-            <div class="upload-text">Drag &amp; drop or tap — PDF, DOCX, TXT</div>
+            <div class="upload-text">{{ t.drag_drop_short }}</div>
           </label>
         </div>
 
         <button type="submit" class="btn btn-primary btn-full" id="generateBtn">
-          ⚡ Generate Flashcards
+          {{ t.generate_flashcards }}
         </button>
 
         <!-- Loading state -->
         <div class="loading-state" id="loadingState" style="display:none;margin-top:12px;">
           <div class="spinner"></div>
-          <span style="margin-left:10px;color:var(--muted);">Generating cards with Groq AI…</span>
+          <span style="margin-left:10px;color:var(--muted);">{{ t.generating_ai }}</span>
         </div>
       </form>
     </div>
@@ -72,74 +72,67 @@
   <!-- RIGHT: Stats + Recent -->
   <div>
     <div class="card card-orange">
-      <div class="card-title">📊 Your Library</div>
+      <div class="card-title">{{ t.your_library }}</div>
 
       <!-- Mini stats row -->
       <div style="display:flex;gap:12px;margin-bottom:16px;">
         <div class="stat-card" style="flex:1;text-align:center;">
           <div class="stat-val" style="color:var(--accent);">{{ decks | length }}</div>
-          <div class="stat-label">Decks</div>
+          <div class="stat-label">{{ t.decks_label }}</div>
         </div>
         <div class="stat-card" style="flex:1;text-align:center;">
           <div class="stat-val" style="color:#eab308;">{{ decks | sum(attribute='card_count') }}</div>
-          <div class="stat-label">Cards</div>
+          <div class="stat-label">{{ t.cards_label }}</div>
         </div>
       </div>
 
       <hr style="border:none;border-top:1px solid var(--border);margin-bottom:14px;">
 
-      <div class="section-label" style="--accent:var(--yellow,#eab308);font-size:11px;margin-bottom:10px;">RECENT DECKS</div>
+      <div class="section-label" style="--accent:var(--yellow,#eab308);font-size:11px;margin-bottom:10px;">{{ t.recent_decks }}</div>
 
       {% if decks %}
         {% for deck in decks[:3] %}
         <div class="list-item">
-          <div class="list-item-icon" style="background:var(--accent);color:#000;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;">
-            {{ deck.title[0].upper() }}
-          </div>
+          <div class="list-item-icon">🃏</div>
           <div class="list-item-content">
             <div class="list-item-title">{{ deck.title }}</div>
-            <div class="list-item-sub">{{ deck.card_count }} cards · {{ deck.created_at[:10] if deck.created_at else '' }}</div>
+            <div class="list-item-sub">{{ deck.card_count }} {{ t.cards_label }}</div>
           </div>
-          <div class="list-item-action">
-            <a href="/flash/study/{{ deck.id }}" class="btn btn-sm btn-green">Study</a>
-          </div>
+          <a href="/flash/study/{{ deck.id }}" class="btn btn-sm btn-primary">{{ t.study_btn }}</a>
         </div>
         {% endfor %}
       {% else %}
-        <div class="empty-state">
+        <div class="empty-state" style="padding:16px 0">
           <div class="empty-state-icon">🃏</div>
-          <div class="empty-state-title">No decks yet</div>
-          <div class="empty-state-sub">Create your first deck!</div>
+          <div class="empty-state-title">{{ t.no_decks }}</div>
+          <div class="empty-state-sub">{{ t.create_first_deck }}</div>
         </div>
       {% endif %}
     </div>
   </div>
 </div>
 
-<!-- Full-width Decks Section -->
-<div class="section-label" style="--accent:#eab308;margin-bottom:16px;">📚 All Decks</div>
-
+<!-- All Decks section -->
 {% if decks %}
-<div class="content-grid">
+<div class="section-label" style="--accent:var(--yellow,#eab308);margin-bottom:16px;">{{ t.all_decks }}</div>
+<div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;">
   {% for deck in decks %}
-  <div class="card" style="border-left:4px solid #eab308;" data-deck-id="{{ deck.id }}">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-      <span style="font-weight:900;font-size:16px;">{{ deck.title }}</span>
-      <span class="chip chip-yellow">{{ deck.card_count }} cards</span>
+  <div class="card" style="display:flex;align-items:center;gap:16px;padding:16px 20px;">
+    <div style="font-size:28px;">🃏</div>
+    <div style="flex:1;">
+      <div style="font-weight:700;font-size:16px;">{{ deck.title }}</div>
+      <div style="color:var(--muted);font-size:13px;margin-top:2px;">
+        {{ deck.card_count }} {{ t.cards_label }} · {{ deck.created_at[:10] if deck.created_at else '' }}
+      </div>
     </div>
-    <div class="text-muted" style="font-size:13px;margin-bottom:14px;">{{ deck.created_at[:10] if deck.created_at else '' }}</div>
-    <div style="display:flex;gap:8px;">
-      <a href="/flash/study/{{ deck.id }}" class="btn btn-primary">🃏 Study</a>
-      <button class="btn btn-danger btn-sm" type="button" onclick="deleteDeck({{ deck.id }}, this)">🗑️</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <a href="/flash/study/{{ deck.id }}" class="btn btn-sm btn-primary">{{ t.study_btn }}</a>
+      <form method="POST" action="/flash/delete/{{ deck.id }}" style="display:inline">
+        <button class="btn btn-sm btn-danger" type="submit">🗑</button>
+      </form>
     </div>
   </div>
   {% endfor %}
-</div>
-{% else %}
-<div class="empty-state">
-  <div class="empty-state-icon">🃏</div>
-  <div class="empty-state-title">No decks yet</div>
-  <div class="empty-state-sub">Create your first deck above to get started!</div>
 </div>
 {% endif %}
 
@@ -147,56 +140,31 @@
 
 {% block scripts %}
 <script>
-// Tab switching
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    const paneId = tab.dataset.tab;
-    document.getElementById('pane-text').style.display = paneId === 'pane-text' ? 'block' : 'none';
-    document.getElementById('pane-upload').style.display = paneId === 'pane-upload' ? 'block' : 'none';
-  });
-});
-
-// Form submit loading state
-document.getElementById('generateForm').addEventListener('submit', function() {
-  const btn = document.getElementById('generateBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Generating…';
-  document.getElementById('loadingState').style.display = 'flex';
-});
-
-// Delete deck — inline confirm, no popup
-function deleteDeck(deckId, btn) {
-  const actionRow = btn.parentNode;
-  actionRow.dataset.orig = actionRow.innerHTML;
-  actionRow.innerHTML = `
-    <span style="font-size:12px;color:var(--muted);white-space:nowrap">Sure?</span>
-    <button class="btn btn-danger btn-sm" id="yes-del-${deckId}">Yes</button>
-    <button class="btn btn-secondary btn-sm" id="no-del-${deckId}">No</button>
-  `;
-  document.getElementById('yes-del-' + deckId).addEventListener('click', function () {
-    this.disabled = true;
-    this.textContent = '…';
-    fetch('/flash/delete/' + deckId, { method: 'POST' })
-      .then(res => {
-        if (res.ok || res.redirected) {
-          const card = actionRow.closest('[data-deck-id]');
-          if (card) { card.style.transition = 'opacity .3s'; card.style.opacity = '0'; setTimeout(() => card.remove(), 300); }
-          if (typeof showToast === 'function') showToast('Deck deleted.', 'success');
-        } else {
-          if (typeof showToast === 'function') showToast('Failed to delete deck.', 'error');
-          actionRow.innerHTML = actionRow.dataset.orig;
-        }
-      })
-      .catch(() => {
-        if (typeof showToast === 'function') showToast('Failed to delete deck.', 'error');
-        actionRow.innerHTML = actionRow.dataset.orig;
+(function () {
+  // Tab switching
+  const tabs = document.querySelectorAll('.tabs .tab');
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      tabs.forEach(function (t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      const target = tab.dataset.tab;
+      ['pane-text','pane-upload'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = (id === target) ? '' : 'none';
       });
+    });
   });
-  document.getElementById('no-del-' + deckId).addEventListener('click', function () {
-    actionRow.innerHTML = actionRow.dataset.orig;
-  });
-}
+
+  // Loading state on submit
+  const form = document.getElementById('generateForm');
+  const btn  = document.getElementById('generateBtn');
+  const loadingState = document.getElementById('loadingState');
+  if (form) {
+    form.addEventListener('submit', function () {
+      btn.disabled = true;
+      if (loadingState) loadingState.style.display = 'flex';
+    });
+  }
+})();
 </script>
 {% endblock %}

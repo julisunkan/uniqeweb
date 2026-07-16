@@ -2,6 +2,7 @@ import os
 from flask import Blueprint, render_template, request, jsonify, Response
 from groq import Groq
 from config import get_groq_key
+from translations import get_t
 
 bp = Blueprint('email_sig', __name__, template_folder='templates')
 
@@ -129,7 +130,7 @@ def index():
 @bp.route('/ai-tagline', methods=['POST'])
 def ai_tagline():
     if not get_groq_key():
-        return jsonify({'error': 'GROQ_API_KEY not configured. Set it in Admin → API Keys.'})
+        return jsonify({'error': get_t()['email_no_groq']})
 
     data = request.get_json() or {}
     name = data.get('name', '')

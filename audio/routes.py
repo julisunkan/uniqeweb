@@ -6,6 +6,7 @@ import uuid
 from flask import (Blueprint, render_template, request, redirect,
                    url_for, flash, jsonify, send_file)
 from config import get_setting
+from translations import get_t
 
 bp = Blueprint('audio', __name__, template_folder='templates')
 
@@ -165,13 +166,13 @@ def process():
         try:
             text = _extract_text(uploaded)
         except Exception as exc:
-            flash(f'Could not read file: {exc}', 'error')
+            flash(f"{get_t()['audio_file_error']}: {exc}", 'error')
             return redirect(url_for('audio.index'))
     else:
         text = request.form.get('text', '').strip()
 
     if not text:
-        flash('Please provide some text or upload a file.', 'error')
+        flash(get_t()['audio_no_content'], 'error')
         return redirect(url_for('audio.index'))
 
     job_id = str(uuid.uuid4())
@@ -211,7 +212,7 @@ def download(filename):
     safe = os.path.basename(filename)
     path = os.path.join(OUTPUTS, safe)
     if not os.path.exists(path):
-        flash('File not found.', 'error')
+        flash(get_t()['audio_not_found'], 'error')
         return redirect(url_for('audio.index'))
     mime = 'audio/wav' if safe.endswith('.wav') else 'audio/mpeg'
     return send_file(path, mimetype=mime,
@@ -232,5 +233,5 @@ def delete(job_id):
         db.execute("DELETE FROM jobs WHERE id=?", (job_id,))
         db.commit()
     db.close()
-    flash('Audiobook deleted.', 'info')
+    flash(get_t()['audio_deleted'], 'info')
     return redirect(url_for('audio.index'))

@@ -9,6 +9,7 @@ from datetime import datetime
 import pypdf
 from flask import (Blueprint, redirect, render_template, request,
                    send_file, url_for, flash)
+from translations import get_t
 
 bp = Blueprint('pdf_filler', __name__, template_folder='templates')
 
@@ -60,11 +61,11 @@ def index():
 def upload():
     f = request.files.get('pdf_file')
     if not f or not f.filename:
-        flash('Please select a PDF file.', 'error')
+        flash(get_t()['pdf_only'], 'error')
         return redirect(url_for('pdf_filler.index'))
 
     if not f.filename.lower().endswith('.pdf'):
-        flash('Only PDF files are supported.', 'error')
+        flash(get_t()['pdf_only'], 'error')
         return redirect(url_for('pdf_filler.index'))
 
     file_id = str(uuid.uuid4())
@@ -102,7 +103,7 @@ def fill(file_id):
         ).fetchone()
 
     if row is None:
-        flash('File not found.', 'error')
+        flash(get_t()['pdf_not_found'], 'error')
         return redirect(url_for('pdf_filler.index'))
 
     field_names = json.loads(row['field_names']) if row['field_names'] else []
@@ -121,7 +122,7 @@ def fill_submit(file_id):
         ).fetchone()
 
     if row is None:
-        flash('File not found.', 'error')
+        flash(get_t()['pdf_not_found'], 'error')
         return redirect(url_for('pdf_filler.index'))
 
     original_path = os.path.join(UPLOADS_DIR, f'{file_id}.pdf')
@@ -147,7 +148,7 @@ def fill_submit(file_id):
             with open(out_path, 'wb') as fh:
                 writer.write(fh)
         except Exception as e:
-            flash(f'Error filling PDF: {e}', 'error')
+            flash(f"{get_t()['pdf_fill_error']}: {e}", 'error')
             return redirect(url_for('pdf_filler.fill', file_id=file_id))
 
     else:
@@ -177,7 +178,7 @@ def fill_submit(file_id):
             with open(out_path, 'wb') as fh:
                 writer.write(fh)
         except Exception as e:
-            flash(f'Error creating annotated PDF: {e}', 'error')
+            flash(f"{get_t()['pdf_fill_error']}: {e}", 'error')
             return redirect(url_for('pdf_filler.fill', file_id=file_id))
 
     original_name = row['original_name'] or 'filled'

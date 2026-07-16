@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}SSH Terminal{% endblock %}
+{% block title %}{{ t.ssh_page_title }}{% endblock %}
 {% block body_class %}app-ssh{% endblock %}
 {% block header_icon %}🖥️{% endblock %}
-{% block header_title %}SSH Terminal{% endblock %}
+{% block header_title %}{{ t.ssh_header }}{% endblock %}
 {% block back_btn %}{% endblock %}
 
 {% block head %}
@@ -30,10 +30,10 @@
 {% block content %}
 <div id="terminal-wrap">
   <div id="status-bar">
-    <span id="conn-status" class="status status-pending">Connecting…</span>
+    <span id="conn-status" class="status status-pending">{{ t.connecting }}</span>
     <span id="conn-host" style="color:#58a6ff;font-weight:600"></span>
     <span style="flex:1"></span>
-    <button onclick="disconnectSSH()" class="btn btn-sm btn-danger">Disconnect</button>
+    <button onclick="disconnectSSH()" class="btn btn-sm btn-danger">{{ t.disconnect_btn }}</button>
   </div>
   <div id="terminal"></div>
 </div>
@@ -48,14 +48,15 @@
   const port = parseInt(params.get('port') || '22', 10);
   const password = sessionStorage.getItem('sshPass');
 
+  const I = window.I18N || {};
+
   // Clear password from session storage immediately after reading
   sessionStorage.removeItem('sshPass');
 
   if (!password) {
-    // Show inline message in status bar then redirect — no popup
     const bar = document.getElementById('status-bar');
     if (bar) {
-      bar.innerHTML = '<span style="color:#ef4444;font-weight:600">⚠ No password found — redirecting…</span>';
+      bar.innerHTML = '<span style="color:#ef4444;font-weight:600">⚠ ' + (I.no_password || 'No password found — redirecting…') + '</span>';
     }
     setTimeout(() => { window.location.href = '/ssh'; }, 1200);
     return;
@@ -63,11 +64,7 @@
 
   // Init xterm
   const term = new Terminal({
-    theme: {
-      background: '#000',
-      foreground: '#c9d1d9',
-      cursor: '#58a6ff',
-    },
+    theme: { background: '#000', foreground: '#c9d1d9', cursor: '#58a6ff' },
     fontFamily: 'monospace',
     fontSize: 14,
     cursorBlink: true,
@@ -78,10 +75,8 @@
   term.open(document.getElementById('terminal'));
   fitAddon.fit();
 
-  // Update status bar host
   document.getElementById('conn-host').textContent = user + '@' + host + ':' + port;
 
-  // Connect socket.io
   const socket = io();
 
   socket.emit('ssh_connect', { host, port, username: user, password });
@@ -89,7 +84,7 @@
   socket.on('ssh_connected', function () {
     const statusEl = document.getElementById('conn-status');
     statusEl.className = 'status status-success';
-    statusEl.textContent = 'Connected';
+    statusEl.textContent = I.connected || 'Connected';
     fitAddon.fit();
   });
 
@@ -101,23 +96,21 @@
     term.write('\r\n\x1b[31mError: ' + msg + '\x1b[0m\r\n');
     const statusEl = document.getElementById('conn-status');
     statusEl.className = 'status status-error';
-    statusEl.textContent = 'Error';
+    statusEl.textContent = I.js_error || 'Error';
   });
 
   socket.on('disconnect', function () {
     const statusEl = document.getElementById('conn-status');
     if (!statusEl.classList.contains('status-error')) {
       statusEl.className = 'status status-pending';
-      statusEl.textContent = 'Disconnected';
+      statusEl.textContent = I.disconnected || 'Disconnected';
     }
   });
 
-  // Send terminal input to server
   term.onData(function (data) {
     socket.emit('ssh_input', { input: data });
   });
 
-  // Resize handling
   const resizeObserver = new ResizeObserver(function () {
     fitAddon.fit();
     socket.emit('ssh_resize', { cols: term.cols, rows: term.rows });

@@ -1,45 +1,45 @@
 {% extends 'base.html' %}
-{% block title %}App Suite — Home{% endblock %}
+{% block title %}{{ t.home_page_title }}{% endblock %}
 {% block header_icon %}⚡{% endblock %}
-{% block header_title %}Mobile App Suite{% endblock %}
+{% block header_title %}{{ t.home_header }}{% endblock %}
 {% block back_btn %}{% endblock %}
 
 {% block content %}
 
 <!-- Hero -->
 <div class="hero" style="--accent:#3b82f6;--accent2:#a855f7;margin-bottom:28px">
-  <div class="hero-title">Your App Suite</div>
-  <div class="hero-sub">Five powerful tools — all in one place. Tap any app to launch.</div>
+  <div class="hero-title">{{ t.home_hero_title }}</div>
+  <div class="hero-sub">{{ t.home_hero_sub }}</div>
 </div>
 
 <!-- Stats row -->
 <div class="content-grid-3" style="margin-bottom:28px">
   <div class="stat-card" style="--stat-color:var(--orange)">
     <div class="stat-icon">🎧</div>
-    <div class="stat-val" style="font-size:20px">Audio</div>
-    <div class="stat-label">Text → MP3</div>
+    <div class="stat-val" style="font-size:20px">{{ t.stat_audio }}</div>
+    <div class="stat-label">{{ t.stat_audio_sub }}</div>
   </div>
   <div class="stat-card" style="--stat-color:var(--blue)">
     <div class="stat-icon">📄</div>
-    <div class="stat-val" style="font-size:20px">PDF</div>
-    <div class="stat-label">Fill & Export</div>
+    <div class="stat-val" style="font-size:20px">{{ t.stat_pdf }}</div>
+    <div class="stat-label">{{ t.stat_pdf_sub }}</div>
   </div>
   <div class="stat-card" style="--stat-color:var(--green)">
     <div class="stat-icon">🖥️</div>
-    <div class="stat-val" style="font-size:20px">SSH</div>
-    <div class="stat-label">Browser Terminal</div>
+    <div class="stat-val" style="font-size:20px">{{ t.stat_ssh }}</div>
+    <div class="stat-label">{{ t.stat_ssh_sub }}</div>
   </div>
 </div>
 
 <!-- App tiles -->
-<div class="section-label" style="--accent:var(--purple)">Applications</div>
+<div class="section-label" style="--accent:var(--purple)">{{ t.section_apps }}</div>
 <div class="app-grid-home">
 
   <a href="/audio" class="app-tile tile-audio">
     <div class="app-tile-icon">🎧</div>
     <div>
-      <div class="app-tile-name">Audiobooks</div>
-      <div class="app-tile-desc">Paste text or upload PDF/DOCX/TXT and convert it to a downloadable MP3 audiobook.</div>
+      <div class="app-tile-name">{{ t.tile_audio_name }}</div>
+      <div class="app-tile-desc">{{ t.tile_audio_desc }}</div>
     </div>
     <div class="app-tile-arrow">→</div>
   </a>
@@ -47,8 +47,8 @@
   <a href="/pdf" class="app-tile tile-pdf">
     <div class="app-tile-icon">📄</div>
     <div>
-      <div class="app-tile-name">PDF Form Filler</div>
-      <div class="app-tile-desc">Upload any PDF, detect form fields, fill them in-browser and export the completed file.</div>
+      <div class="app-tile-name">{{ t.tile_pdf_name }}</div>
+      <div class="app-tile-desc">{{ t.tile_pdf_desc }}</div>
     </div>
     <div class="app-tile-arrow">→</div>
   </a>
@@ -56,8 +56,8 @@
   <a href="/ssh" class="app-tile tile-ssh">
     <div class="app-tile-icon">🖥️</div>
     <div>
-      <div class="app-tile-name">SSH Terminal</div>
-      <div class="app-tile-desc">Full browser-based SSH client with xterm.js. Connect to any server from anywhere.</div>
+      <div class="app-tile-name">{{ t.tile_ssh_name }}</div>
+      <div class="app-tile-desc">{{ t.tile_ssh_desc }}</div>
     </div>
     <div class="app-tile-arrow">→</div>
   </a>
@@ -65,8 +65,8 @@
   <a href="/email" class="app-tile tile-email">
     <div class="app-tile-icon">✉️</div>
     <div>
-      <div class="app-tile-name">Email Signature</div>
-      <div class="app-tile-desc">Design professional email signatures with live preview, AI taglines, and HTML export.</div>
+      <div class="app-tile-name">{{ t.tile_email_name }}</div>
+      <div class="app-tile-desc">{{ t.tile_email_desc }}</div>
     </div>
     <div class="app-tile-arrow">→</div>
   </a>
@@ -74,8 +74,8 @@
   <a href="/flash" class="app-tile tile-flash" style="grid-column:span 2">
     <div class="app-tile-icon">🃏</div>
     <div>
-      <div class="app-tile-name">AI Flashcards</div>
-      <div class="app-tile-desc">Paste notes or upload a PDF — Groq AI generates interactive study flashcards instantly.</div>
+      <div class="app-tile-name">{{ t.tile_flash_name }}</div>
+      <div class="app-tile-desc">{{ t.tile_flash_desc }}</div>
     </div>
     <div class="app-tile-arrow">→</div>
   </a>
@@ -83,10 +83,7 @@
 </div>
 
 <div style="margin-top:28px;text-align:center;color:var(--muted);font-size:12px;line-height:2">
-  Powered by <span class="text-blue">Flask</span> ·
-  <span class="text-green">SQLite</span> ·
-  <span class="text-orange">Groq AI</span> ·
-  <span class="text-yellow">gTTS</span>
+  {{ t.powered_by }}
 </div>
 
 {% endblock %}

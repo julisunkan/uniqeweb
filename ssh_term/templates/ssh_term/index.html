@@ -1,44 +1,44 @@
 {% extends 'base.html' %}
 
-{% block title %}SSH Terminal{% endblock %}
+{% block title %}{{ t.ssh_page_title }}{% endblock %}
 {% block body_class %}app-ssh{% endblock %}
 {% block header_icon %}🖥️{% endblock %}
-{% block header_title %}SSH Terminal{% endblock %}
+{% block header_title %}{{ t.ssh_header }}{% endblock %}
 {% block back_btn %}{% endblock %}
 
 {% block content %}
 <div class="hero">
-  <div class="hero-title">🖥️ SSH Terminal</div>
-  <div class="hero-sub">Connect to any remote server directly from your browser. Credentials stay in your session — never logged.</div>
+  <div class="hero-title">{{ t.ssh_hero_title }}</div>
+  <div class="hero-sub">{{ t.ssh_hero_sub }}</div>
 </div>
 
 <div class="content-grid">
   <!-- LEFT: Connection Card -->
   <div class="card card-green card-glow">
-    <div class="card-title">🔌 New Connection</div>
+    <div class="card-title">{{ t.new_connection }}</div>
 
     <div class="input-group">
-      <label class="input-label">Hostname / IP</label>
-      <input class="input" id="hostInput" type="text" placeholder="192.168.1.1 or server.example.com">
+      <label class="input-label">{{ t.hostname_label }}</label>
+      <input class="input" id="hostInput" type="text" placeholder="{{ t.hostname_ph }}">
     </div>
 
     <div class="input-row">
       <div class="input-group" style="flex:1">
-        <label class="input-label">Username</label>
+        <label class="input-label">{{ t.username_label }}</label>
         <input class="input" id="userInput" type="text" value="root">
       </div>
       <div class="input-group">
-        <label class="input-label">Port</label>
+        <label class="input-label">{{ t.port_label }}</label>
         <input class="input" id="portInput" type="number" value="22" style="width:90px">
       </div>
     </div>
 
     <div class="input-group">
-      <label class="input-label">Password</label>
+      <label class="input-label">{{ t.password_label }}</label>
       <input class="input" id="passInput" type="password" autocomplete="current-password">
     </div>
 
-    <button class="btn btn-primary btn-full" id="connectBtn" onclick="doConnect()">🔗 Connect via SSH</button>
+    <button class="btn btn-primary btn-full" id="connectBtn" onclick="doConnect()">{{ t.connect_btn }}</button>
 
     <div id="sshConnError" style="display:none;margin-top:10px;padding:11px 14px;border-radius:10px;
          background:color-mix(in srgb,var(--red) 12%,var(--elevated));
@@ -46,29 +46,29 @@
          color:var(--red);font-size:13px;font-weight:600"></div>
 
     <div class="card" style="margin-top:16px;background:color-mix(in srgb,var(--green) 8%,var(--surface));border-color:color-mix(in srgb,var(--green) 25%,transparent)">
-      🔒 Credentials are stored only in your browser's session storage and never sent in plain-text URLs. Connections are relayed end-to-end via WebSocket.
+      {{ t.ssh_security_note }}
     </div>
   </div>
 
   <!-- RIGHT: Info Cards -->
   <div style="display:flex;flex-direction:column;gap:20px">
     <div class="card card-yellow">
-      <div class="card-title">⚡ Features</div>
+      <div class="card-title">{{ t.features_title }}</div>
       <ul class="list-item" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
-        <li class="list-item"><span class="list-item-icon">✦</span><span class="list-item-content"><span class="list-item-title">Full xterm.js terminal</span></span></li>
-        <li class="list-item"><span class="list-item-icon">✦</span><span class="list-item-content"><span class="list-item-title">Resize-aware PTY</span></span></li>
-        <li class="list-item"><span class="list-item-icon">✦</span><span class="list-item-content"><span class="list-item-title">Password auth</span></span></li>
-        <li class="list-item"><span class="list-item-icon">✦</span><span class="list-item-content"><span class="list-item-title">WebSocket relay</span></span></li>
-        <li class="list-item"><span class="list-item-icon">✦</span><span class="list-item-content"><span class="list-item-title">No plugins needed</span></span></li>
+        <li class="list-item"><span class="list-item-icon">✦</span><span class="list-item-content"><span class="list-item-title">{{ t.feat_xterm }}</span></span></li>
+        <li class="list-item"><span class="list-item-icon">✦</span><span class="list-item-content"><span class="list-item-title">{{ t.feat_pty }}</span></span></li>
+        <li class="list-item"><span class="list-item-icon">✦</span><span class="list-item-content"><span class="list-item-title">{{ t.feat_auth }}</span></span></li>
+        <li class="list-item"><span class="list-item-icon">✦</span><span class="list-item-content"><span class="list-item-title">{{ t.feat_ws }}</span></span></li>
+        <li class="list-item"><span class="list-item-icon">✦</span><span class="list-item-content"><span class="list-item-title">{{ t.feat_noplugins }}</span></span></li>
       </ul>
     </div>
 
     <div class="card card-blue">
-      <div class="card-title">📋 Recent Connections</div>
+      <div class="card-title">{{ t.recent_conns }}</div>
       <div id="recentList">
         <div class="empty-state" style="padding:16px 0">
           <div class="empty-state-icon">🖥️</div>
-          <div class="empty-state-title">No recent connections</div>
+          <div class="empty-state-title" id="noRecentText">{{ t.no_recent_conns }}</div>
         </div>
       </div>
     </div>
@@ -83,59 +83,55 @@
   const STORAGE_KEY = 'sshRecent';
 
   function getRecent() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+    try { return JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '[]'); }
     catch (e) { return []; }
   }
 
-  function saveRecent(host, user, port) {
-    let recent = getRecent().filter(r => !(r.host === host && r.user === user && r.port === port));
-    recent.unshift({ host, user, port });
-    if (recent.length > MAX_RECENT) recent = recent.slice(0, MAX_RECENT);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(recent));
+  function saveRecent(list) {
+    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch (e) {}
   }
 
   function renderRecent() {
-    const recent = getRecent();
+    const list = getRecent();
     const container = document.getElementById('recentList');
-    if (!recent.length) {
-      container.innerHTML = '<div class="empty-state" style="padding:16px 0"><div class="empty-state-icon">🖥️</div><div class="empty-state-title">No recent connections</div></div>';
+    if (!list.length) {
+      container.innerHTML = '<div class="empty-state" style="padding:16px 0"><div class="empty-state-icon">🖥️</div><div class="empty-state-title">' + (window.I18N && window.I18N.no_recent_conns || '—') + '</div></div>';
       return;
     }
-    container.innerHTML = recent.map(r => `
-      <div class="chip chip-accent" style="cursor:pointer;margin:4px 4px 4px 0;display:inline-flex;align-items:center;gap:6px"
-           onclick="prefill(${JSON.stringify(r.host)}, ${JSON.stringify(r.user)}, ${JSON.stringify(String(r.port))})">
-        🖥️ ${r.user}@${r.host}:${r.port}
-      </div>
-    `).join('');
+    container.innerHTML = list.map(function (c) {
+      return '<div class="list-item" style="cursor:pointer" onclick="fillRecent(' + JSON.stringify(c) + ')">'
+        + '<div class="list-item-icon">🖥️</div>'
+        + '<div class="list-item-content"><div class="list-item-title">' + c.user + '@' + c.host + ':' + c.port + '</div></div>'
+        + '<div class="list-item-action">›</div></div>';
+    }).join('');
   }
 
-  window.prefill = function(host, user, port) {
-    document.getElementById('hostInput').value = host;
-    document.getElementById('userInput').value = user;
-    document.getElementById('portInput').value = port;
-    document.getElementById('passInput').focus();
+  window.fillRecent = function (c) {
+    document.getElementById('hostInput').value = c.host;
+    document.getElementById('userInput').value = c.user;
+    document.getElementById('portInput').value = c.port;
   };
 
-  window.doConnect = function() {
+  window.doConnect = function () {
     const host = document.getElementById('hostInput').value.trim();
-    const user = document.getElementById('userInput').value.trim();
-    const port = parseInt(document.getElementById('portInput').value, 10) || 22;
+    const user = document.getElementById('userInput').value.trim() || 'root';
+    const port = parseInt(document.getElementById('portInput').value) || 22;
     const pass = document.getElementById('passInput').value;
-
     const errEl = document.getElementById('sshConnError');
-    if (!host) { errEl.textContent = 'Please enter a hostname or IP address.'; errEl.style.display = ''; return; }
-    if (!pass) { errEl.textContent = 'Please enter a password.'; errEl.style.display = ''; return; }
+
+    if (!host) { errEl.textContent = '⚠ Host required'; errEl.style.display = ''; return; }
     errEl.style.display = 'none';
 
-    sessionStorage.setItem('sshPass', pass);
-    sessionStorage.setItem('sshHost', host);
-    sessionStorage.setItem('sshUser', user);
-    sessionStorage.setItem('sshPort', String(port));
+    // Save to recent
+    const recent = getRecent().filter(function (c) { return !(c.host === host && c.user === user && c.port === port); });
+    recent.unshift({ host, user, port });
+    saveRecent(recent.slice(0, MAX_RECENT));
 
-    saveRecent(host, user, port);
+    // Stash password in sessionStorage (cleared immediately after read in terminal page)
+    try { sessionStorage.setItem('sshPass', pass); } catch (e) {}
 
-    const params = new URLSearchParams({ host, user, port });
-    window.location.href = '/ssh/terminal?' + params.toString();
+    window.location.href = '/ssh/terminal?host=' + encodeURIComponent(host)
+      + '&port=' + port + '&user=' + encodeURIComponent(user);
   };
 
   renderRecent();

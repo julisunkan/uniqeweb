@@ -8,6 +8,22 @@ def create_app():
     app = Flask(__name__)
     app.secret_key = os.environ.get('SESSION_SECRET', 'dev-secret-change-me')
 
+    # ── i18n context processor ────────────────────────────────────────────────
+    from translations import get_t, get_locale, TRANSLATIONS
+
+    @app.context_processor
+    def inject_translations():
+        return {'t': get_t(), 'lang': get_locale()}
+
+    # ── Language switcher route ───────────────────────────────────────────────
+    from flask import session as flask_session, request as flask_request, redirect
+
+    @app.route('/set-lang/<lang>')
+    def set_lang(lang):
+        if lang in TRANSLATIONS:
+            flask_session['lang'] = lang
+        return redirect(flask_request.referrer or '/')
+
     # ── Register blueprints ───────────────────────────────────────────────────
     from audio.routes import bp as audio_bp
     from pdf_filler.routes import bp as pdf_bp

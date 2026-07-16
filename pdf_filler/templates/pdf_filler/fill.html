@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}Fill — {{ original_name }}{% endblock %}
+{% block title %}{{ t.pdf_page_title }}{% endblock %}
 {% block body_class %}app-pdf{% endblock %}
 {% block header_icon %}📄{% endblock %}
-{% block header_title %}PDF Form Filler{% endblock %}
+{% block header_title %}{{ t.pdf_header }}{% endblock %}
 
 {% block back_btn %}{% endblock %}
 
@@ -17,9 +17,9 @@
       <div class="fw-black" style="font-size:18px">{{ original_name }}</div>
       <div class="text-muted" style="font-size:13px;margin-top:4px">
         {% if has_fields %}
-          <span class="chip chip-blue">{{ fields|length }} form field{{ 's' if fields|length != 1 }}</span>
+          <span class="chip chip-blue">{{ fields|length }} {{ t.form_field_label }}</span>
         {% else %}
-          <span class="chip chip-orange">No form fields detected</span>
+          <span class="chip chip-orange">{{ t.no_uploads }}</span>
         {% endif %}
       </div>
     </div>
@@ -39,7 +39,7 @@
           type="text"
           id="field_{{ loop.index }}"
           name="field_{{ field_name }}"
-          placeholder="Enter value…"
+          placeholder="{{ t.enter_value }}"
           autocomplete="off"
         >
       </div>
@@ -48,29 +48,29 @@
 
   {% else %}
     <div class="card card-orange" style="margin-bottom:20px">
-      <div class="card-title">📝 Add Text Annotation</div>
+      <div class="card-title">{{ t.no_fields_title }}</div>
       <p style="color:var(--text-2);font-size:14px;margin-bottom:16px">
-        This PDF has no fillable form fields. Add a text annotation to be overlaid on the first page:
+        {{ t.no_fields_msg }}
       </p>
       <div class="input-group">
-        <label class="input-label" for="annotation">Annotation text</label>
+        <label class="input-label" for="annotation">{{ t.annotation_label }}</label>
         <textarea
           class="textarea"
           id="annotation"
           name="annotation"
           rows="5"
           maxlength="200"
-          placeholder="Enter text to overlay on the first page…"
+          placeholder="{{ t.annotation_ph }}"
         ></textarea>
-        <div style="color:var(--text-2);font-size:12px;margin-top:4px;text-align:right">Max 200 characters</div>
+        <div style="color:var(--text-2);font-size:12px;margin-top:4px;text-align:right">{{ t.max_200 }}</div>
       </div>
     </div>
   {% endif %}
 
   <!-- Action buttons -->
   <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap">
-    <button type="submit" class="btn btn-primary" id="exportBtn">📥 Download Filled PDF</button>
-    <a href="/pdf/" class="btn btn-secondary">← New Upload</a>
+    <button type="submit" class="btn btn-primary" id="exportBtn">{{ t.download_filled }}</button>
+    <a href="/pdf/" class="btn btn-secondary">{{ t.new_upload }}</a>
   </div>
 
 </form>
@@ -80,10 +80,11 @@
 <script>
   const fillForm = document.getElementById('fillForm');
   const exportBtn = document.getElementById('exportBtn');
+  const dlLabel = {{ t.download_filled | tojson }};
 
   fillForm.addEventListener('submit', function () {
-    setLoading(exportBtn, true, 'Generating PDF…');
-    setTimeout(function () { setLoading(exportBtn, false, '📥 Download Filled PDF'); }, 8000);
+    setLoading(exportBtn, true, '⏳');
+    setTimeout(function () { setLoading(exportBtn, false, dlLabel); }, 8000);
   });
 </script>
 {% endblock %}

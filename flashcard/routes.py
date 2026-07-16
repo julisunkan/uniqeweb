@@ -7,6 +7,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 
 from groq import Groq
 from config import get_groq_key, get_setting
+from translations import get_t
 
 bp = Blueprint('flashcard', __name__, template_folder='templates')
 
@@ -91,7 +92,7 @@ def generate():
     card_count = max(5, min(max_count, card_count))
 
     if not title:
-        flash('Please enter a deck title.', 'error')
+        flash(get_t()['flash_no_title'], 'error')
         return redirect(url_for('flashcard.index'))
 
     # Extract text
@@ -101,19 +102,19 @@ def generate():
         try:
             text = extract_text_from_file(uploaded_file)
         except Exception as e:
-            flash(f'Failed to read file: {e}', 'error')
+            flash(f"{get_t()['flash_file_error']}: {e}", 'error')
             return redirect(url_for('flashcard.index'))
     else:
         text = request.form.get('text', '').strip()
 
     if not text:
-        flash('Please provide text or upload a file to generate flashcards.', 'error')
+        flash(get_t()['flash_no_content'], 'error')
         return redirect(url_for('flashcard.index'))
 
     # Call Groq
     groq_key = get_groq_key()
     if not groq_key:
-        flash('GROQ_API_KEY is not configured. Set it in Admin → API Keys.', 'error')
+        flash(get_t()['flash_no_groq'], 'error')
         return redirect(url_for('flashcard.index'))
 
     try:
@@ -152,14 +153,14 @@ def generate():
 
         cards_data = json.loads(response_text)
     except json.JSONDecodeError as e:
-        flash(f'Failed to parse flashcard response. Please try again. ({e})', 'error')
+        flash(f"{get_t()['flash_parse_error']} ({e})", 'error')
         return redirect(url_for('flashcard.index'))
     except Exception as e:
-        flash(f'Error generating flashcards: {e}', 'error')
+        flash(f"{get_t()['flash_gen_error']}: {e}", 'error')
         return redirect(url_for('flashcard.index'))
 
     if not cards_data:
-        flash('No flashcards were generated. Please try with different text.', 'error')
+        flash(get_t()['flash_no_cards'], 'error')
         return redirect(url_for('flashcard.index'))
 
     # Save to DB
@@ -191,7 +192,7 @@ def study(deck_id):
     deck = conn.execute('SELECT * FROM decks WHERE id = ?', (deck_id,)).fetchone()
     if not deck:
         conn.close()
-        flash('Deck not found.', 'error')
+        flash(get_t()['flash_deck_not_found'], 'error')
         return redirect(url_for('flashcard.index'))
     cards = conn.execute(
         'SELECT * FROM cards WHERE deck_id = ? ORDER BY id', (deck_id,)
@@ -207,7 +208,7 @@ def delete(deck_id):
     conn.execute('DELETE FROM decks WHERE id = ?', (deck_id,))
     conn.commit()
     conn.close()
-    flash('Deck deleted.', 'success')
+    flash(get_t()['flash_deck_deleted'], 'success')
     return redirect(url_for('flashcard.index'))
 
 

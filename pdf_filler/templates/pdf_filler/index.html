@@ -1,34 +1,34 @@
 {% extends 'base.html' %}
 
-{% block title %}PDF Form Filler{% endblock %}
+{% block title %}{{ t.pdf_page_title }}{% endblock %}
 {% block body_class %}app-pdf{% endblock %}
 {% block header_icon %}📄{% endblock %}
-{% block header_title %}PDF Form Filler{% endblock %}
+{% block header_title %}{{ t.pdf_header }}{% endblock %}
 
 {% block back_btn %}{% endblock %}
 
 {% block content %}
 <div class="hero">
-  <div class="hero-title">📄 PDF Form Filler</div>
-  <div class="hero-sub">Upload any PDF, fill its form fields in-browser, and download the completed file — no installation needed.</div>
+  <div class="hero-title">{{ t.pdf_hero_title }}</div>
+  <div class="hero-sub">{{ t.pdf_hero_sub }}</div>
 </div>
 
 <div class="content-grid">
 
   <!-- LEFT: Upload card -->
   <div class="card card-blue card-glow">
-    <div class="card-title">📤 Upload PDF</div>
+    <div class="card-title">{{ t.upload_pdf_card }}</div>
     <form method="POST" action="/pdf/upload" enctype="multipart/form-data" id="uploadForm">
       <div class="upload-area" id="uploadArea">
         <div class="upload-icon">📋</div>
         <div class="upload-text">
-          <strong>Choose PDF file</strong><br>
-          Supports fillable forms and regular PDFs
+          <strong>{{ t.choose_pdf }}</strong><br>
+          {{ t.supports_pdf }}
         </div>
         <input type="file" name="pdf_file" accept=".pdf" id="pdfInput" required>
       </div>
       <button type="submit" class="btn btn-primary btn-full" id="uploadBtn" style="margin-top:14px">
-        Upload &amp; Detect Fields
+        {{ t.upload_detect_btn }}
       </button>
     </form>
   </div>
@@ -36,29 +36,29 @@
   <!-- RIGHT: How it works + history -->
   <div style="display:flex;flex-direction:column;gap:20px">
     <div class="card card-green">
-      <div class="card-title">✨ How It Works</div>
+      <div class="card-title">{{ t.pdf_how_works }}</div>
       <div class="list-item">
         <div class="list-item-icon">1️⃣</div>
         <div class="list-item-content">
-          <div class="list-item-title">Upload your PDF</div>
+          <div class="list-item-title">{{ t.pdf_step1 }}</div>
         </div>
       </div>
       <div class="list-item">
         <div class="list-item-icon">2️⃣</div>
         <div class="list-item-content">
-          <div class="list-item-title">We detect all form fields automatically</div>
+          <div class="list-item-title">{{ t.pdf_step2 }}</div>
         </div>
       </div>
       <div class="list-item">
         <div class="list-item-icon">3️⃣</div>
         <div class="list-item-content">
-          <div class="list-item-title">Fill them in-browser and download filled PDF</div>
+          <div class="list-item-title">{{ t.pdf_step3 }}</div>
         </div>
       </div>
     </div>
 
     <div class="card card-blue">
-      <div class="card-title">🕓 Recent Uploads</div>
+      <div class="card-title">{{ t.recent_uploads }}</div>
       {% if uploads %}
         {% for upload in uploads %}
         <a href="/pdf/fill/{{ upload['id'] }}" style="text-decoration:none;color:inherit">
@@ -68,9 +68,9 @@
               <div class="list-item-title">{{ upload['original_name'] }}</div>
               <div class="list-item-sub">
                 {% if upload['has_fields'] %}
-                  <span class="chip chip-blue">Form Fields</span>
+                  <span class="chip chip-blue">{{ t.form_fields_chip }}</span>
                 {% else %}
-                  <span class="chip chip-orange">No Fields</span>
+                  <span class="chip chip-orange">{{ t.no_fields_chip }}</span>
                 {% endif %}
                 &nbsp;{{ upload['created_at'][:16] if upload['created_at'] else '' }}
               </div>
@@ -82,8 +82,8 @@
       {% else %}
         <div class="empty-state">
           <div class="empty-state-icon">📭</div>
-          <div class="empty-state-title">No uploads yet</div>
-          <div class="empty-state-sub">Upload a PDF above to get started</div>
+          <div class="empty-state-title">{{ t.no_uploads }}</div>
+          <div class="empty-state-sub">{{ t.no_uploads_sub }}</div>
         </div>
       {% endif %}
     </div>
@@ -103,12 +103,33 @@
     if (this.files && this.files[0]) {
       const name = this.files[0].name;
       uploadArea.querySelector('.upload-text').innerHTML =
-        '<strong>' + name + '</strong><br><span style="font-size:13px;color:var(--text-2)">PDF selected — ready to upload</span>';
+        '<strong>' + name + '</strong>';
     }
   });
 
   uploadForm.addEventListener('submit', function () {
-    setLoading(uploadBtn, true, 'Uploading…');
+    if (pdfInput.files && pdfInput.files[0]) {
+      setLoading(uploadBtn, true, '⏳');
+    }
+  });
+
+  // Drag-and-drop
+  uploadArea.addEventListener('dragover', function (e) {
+    e.preventDefault();
+    uploadArea.classList.add('drag-over');
+  });
+  uploadArea.addEventListener('dragleave', function () {
+    uploadArea.classList.remove('drag-over');
+  });
+  uploadArea.addEventListener('drop', function (e) {
+    e.preventDefault();
+    uploadArea.classList.remove('drag-over');
+    const files = e.dataTransfer.files;
+    if (files.length) {
+      pdfInput.files = files;
+      uploadArea.querySelector('.upload-text').innerHTML =
+        '<strong>' + files[0].name + '</strong>';
+    }
   });
 </script>
 {% endblock %}
