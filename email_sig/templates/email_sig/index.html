@@ -178,63 +178,64 @@ function scheduleUpdate() {
   _debounce = setTimeout(updatePreview, 300);
 }
 
-function getFormData() {
+// Map form field IDs → backend parameter names
+function getPayload() {
   return {
-    name:        $('name').value,
-    jobTitle:    $('jobTitle').value,
-    company:     $('company').value,
-    emailAddr:   $('emailAddr').value,
-    phone:       $('phone').value,
-    website:     $('website').value,
-    twitter:     $('twitter').value,
-    linkedin:    $('linkedin').value,
-    tagline:     $('tagline').value,
-    accentColor: $('accentColor').value,
-    font:        $('font').value,
-    template:    $('templateInput').value,
+    name:         $('name').value,
+    title:        $('jobTitle').value,
+    company:      $('company').value,
+    email:        $('emailAddr').value,
+    phone:        $('phone').value,
+    website:      $('website').value,
+    twitter:      $('twitter').value,
+    linkedin:     $('linkedin').value,
+    tagline:      $('tagline').value,
+    accent_color: $('accentColor').value,
+    font:         $('font').value,
+    template:     $('templateInput').value,
   };
 }
 
 function updatePreview() {
-  const data = getFormData();
-  const params = new URLSearchParams(data);
-  fetch('/email/preview?' + params.toString())
+  const payload = getPayload();
+  fetch('/email/render-preview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
     .then(r => r.json())
-    .then(d => {
-      if (d.html) $('previewInner').innerHTML = d.html;
-    })
+    .then(d => { if (d.html) $('previewInner').innerHTML = d.html; })
     .catch(() => {});
 }
 
 function copyHTML() {
-  const data = getFormData();
-  const params = new URLSearchParams(data);
-  fetch('/email/preview?' + params.toString())
+  fetch('/email/render-preview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(getPayload()),
+  })
     .then(r => r.json())
     .then(d => {
       if (!d.html) return;
-      navigator.clipboard.writeText(d.html).then(function () {
-        if (typeof showToast === 'function') showToast('Copied!', 'success');
-      }).catch(function () {
-        if (typeof showToast === 'function') showToast('Copy failed', 'error');
-      });
+      navigator.clipboard.writeText(d.html)
+        .then(() => { if (typeof showToast === 'function') showToast('Copied!', 'success'); })
+        .catch(() => { if (typeof showToast === 'function') showToast('Copy failed', 'error'); });
     });
 }
 
 function downloadHTML() {
-  const data = getFormData();
-  const params = new URLSearchParams(data);
+  const params = new URLSearchParams(getPayload());
   window.open('/email/export.html?' + params.toString());
 }
 
 function generateTagline() {
   const btn = $('aiBtn');
   if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
-  const data = getFormData();
-  fetch('/email/tagline', {
+  const p = getPayload();
+  fetch('/email/ai-tagline', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: data.name, job: data.jobTitle, company: data.company })
+    body: JSON.stringify({ name: p.name, title: p.title, company: p.company }),
   })
     .then(r => r.json())
     .then(d => {
@@ -243,7 +244,7 @@ function generateTagline() {
     })
     .catch(() => {})
     .finally(() => {
-      if (btn) { btn.disabled = false; btn.textContent = '✨ ' + (window.I18N && ''); btn.textContent = '✨ {{ t.generate_ai }}'; }
+      if (btn) { btn.disabled = false; btn.textContent = '✨ {{ t.generate_ai }}'; }
     });
 }
 
