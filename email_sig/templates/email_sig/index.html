@@ -209,18 +209,43 @@ function updatePreview() {
 }
 
 function copyHTML() {
-  fetch('/email/render-preview', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(getPayload()),
-  })
-    .then(r => r.json())
-    .then(d => {
-      if (!d.html) return;
-      navigator.clipboard.writeText(d.html)
-        .then(() => { if (typeof showToast === 'function') showToast('Copied!', 'success'); })
-        .catch(() => { if (typeof showToast === 'function') showToast('Copy failed', 'error'); });
-    });
+  // Read the already-rendered HTML from the live preview DOM — synchronously,
+  // so the clipboard write stays inside the user-gesture handler on mobile.
+  const inner = $('previewInner');
+  const html = inner ? inner.innerHTML : '';
+  const placeholder = !html || html.includes('fill_details') || html.trim().startsWith('<p style');
+  if (placeholder) {
+    if (typeof showToast === 'function') showToast('{{ t.fill_details_left }}', 'error');
+    return;
+  }
+  _writeClipboard(html);
+}
+
+function _writeClipboard(text) {
+  // Modern Clipboard API (requires secure context + user gesture)
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => { if (typeof showToast === 'function') showToast('Copied!', 'success'); })
+      .catch(() => _execCommandCopy(text));
+    return;
+  }
+  _execCommandCopy(text);
+}
+
+function _execCommandCopy(text) {
+  // Fallback: textarea + execCommand — works on older mobile browsers
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  var ok = false;
+  try { ok = document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta);
+  if (typeof showToast === 'function') {
+    showToast(ok ? 'Copied!' : 'Copy failed', ok ? 'success' : 'error');
+  }
 }
 
 function downloadHTML() {
