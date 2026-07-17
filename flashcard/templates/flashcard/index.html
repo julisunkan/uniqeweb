@@ -6,6 +6,12 @@
 {% block header_title %}{{ t.flash_header }}{% endblock %}
 {% block back_btn %}{% endblock %}
 
+{% block pwa_manifest %}
+<link rel="manifest" href="/static/manifests/flash.json">
+<link rel="apple-touch-icon" href="/static/icons/flash-192.png">
+<meta name="theme-color" content="#eab308">
+{% endblock %}
+
 {% block content %}
 
 <!-- Hero -->

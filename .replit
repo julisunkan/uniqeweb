@@ -3,7 +3,7 @@ modules = ["nodejs-20", "web", "python-3.12"]
 
 [nix]
 channel = "stable-25_05"
-packages = ["cargo", "freetype", "glibcLocales", "lcms2", "libiconv", "libimagequant", "libjpeg", "libtiff", "libwebp", "libxcrypt", "openjpeg", "openssl", "pkg-config", "rustc", "tcl", "tk", "zlib"]
+packages = ["cargo", "freetype", "glibcLocales", "gumbo", "harfbuzz", "jbig2dec", "lcms2", "libev", "libiconv", "libimagequant", "libjpeg", "libjpeg_turbo", "libtiff", "libwebp", "libxcrypt", "mupdf", "openjpeg", "openssl", "pkg-config", "rustc", "swig", "tcl", "tk", "xcbuild", "zlib"]
 
 [unitTest]
 language = "python3"

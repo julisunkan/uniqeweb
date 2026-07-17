@@ -6,6 +6,12 @@
 {% block header_title %}{{ t.audio_header }}{% endblock %}
 {% block back_btn %}{% endblock %}
 
+{% block pwa_manifest %}
+<link rel="manifest" href="/static/manifests/audio.json">
+<link rel="apple-touch-icon" href="/static/icons/audio-192.png">
+<meta name="theme-color" content="#f97316">
+{% endblock %}
+
 {% block head %}
 <style>
   .steps-row { display:flex; gap:16px; flex-wrap:wrap; }

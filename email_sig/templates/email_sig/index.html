@@ -6,6 +6,12 @@
 {% block header_title %}{{ t.email_header }}{% endblock %}
 {% block back_btn %}{% endblock %}
 
+{% block pwa_manifest %}
+<link rel="manifest" href="/static/manifests/email.json">
+<link rel="apple-touch-icon" href="/static/icons/email-192.png">
+<meta name="theme-color" content="#ef4444">
+{% endblock %}
+
 {% block content %}
 
 <!-- HERO -->

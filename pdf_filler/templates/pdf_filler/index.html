@@ -6,6 +6,12 @@
 {% block header_title %}{{ t.pdf_header }}{% endblock %}
 {% block back_btn %}{% endblock %}
 
+{% block pwa_manifest %}
+<link rel="manifest" href="/static/manifests/pdf.json">
+<link rel="apple-touch-icon" href="/static/icons/pdf-192.png">
+<meta name="theme-color" content="#3b82f6">
+{% endblock %}
+
 {% block head %}
 <style>
   .upload-drop-zone {

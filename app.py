@@ -48,6 +48,20 @@ def create_app():
     def index():
         return render_template('index.html')
 
+    # ── Service Worker — must be served from root for full-app scope ──────────
+    import mimetypes
+    from flask import send_from_directory
+    @app.route('/sw.js')
+    def service_worker():
+        response = send_from_directory(
+            os.path.join(app.root_path, 'static'),
+            'sw.js',
+            mimetype='application/javascript'
+        )
+        response.headers['Service-Worker-Allowed'] = '/'
+        response.headers['Cache-Control'] = 'no-cache'
+        return response
+
     return app
 
 

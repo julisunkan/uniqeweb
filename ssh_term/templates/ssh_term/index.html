@@ -6,6 +6,12 @@
 {% block header_title %}{{ t.ssh_header }}{% endblock %}
 {% block back_btn %}{% endblock %}
 
+{% block pwa_manifest %}
+<link rel="manifest" href="/static/manifests/ssh.json">
+<link rel="apple-touch-icon" href="/static/icons/ssh-192.png">
+<meta name="theme-color" content="#22c55e">
+{% endblock %}
+
 {% block content %}
 <div class="hero">
   <div class="hero-title">{{ t.ssh_hero_title }}</div>

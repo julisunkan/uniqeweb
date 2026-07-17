@@ -1,0 +1,18 @@
+{
+  "name": "PDF Form Filler",
+  "short_name": "PDF Filler",
+  "description": "Upload any PDF, detect form fields, fill them in-browser and export the completed file.",
+  "start_url": "/pdf",
+  "scope": "/pdf",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#080b14",
+  "theme_color": "#3b82f6",
+  "icons": [
+    { "src": "/static/icons/pdf-192.png",          "sizes": "192x192", "type": "image/png" },
+    { "src": "/static/icons/pdf-512.png",          "sizes": "512x512", "type": "image/png" },
+    { "src": "/static/icons/pdf-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/static/icons/pdf-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "categories": ["productivity", "utilities"]
+}
