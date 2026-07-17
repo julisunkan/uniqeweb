@@ -110,9 +110,9 @@ TRANSLATIONS = {
         'email_no_groq':      'GROQ_API_KEY not configured. Set it in Admin → API Keys.',
 
         # ── Flashcard ─────────────────────────────────────────────────────
-        'flash_page_title':    'AI Flashcard Generator',
-        'flash_header':        'Flashcard Generator',
-        'flash_hero_title':    '🃏 AI Flashcard Generator',
+        'flash_page_title':    'StudyPrep: Learn from Your Study Materials',
+        'flash_header':        'StudyPrep: Learn from Your Study Materials',
+        'flash_hero_title':    '🃏 StudyPrep: Learn from Your Study Materials',
         'flash_hero_sub':      'Paste your notes or upload a PDF — Groq AI creates interactive study flashcards in seconds.',
         'create_new_deck':     '✨ Create New Deck',
         'deck_title':          'Deck Title',
