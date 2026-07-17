@@ -1,4 +1,5 @@
 {
+  "id": "/audio/",
   "name": "Audiobooks Generator",
   "short_name": "Audiobooks",
   "description": "Convert text, PDF, DOCX or TXT files into downloadable MP3 audiobooks powered by Microsoft Edge neural TTS.",

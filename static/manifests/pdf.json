@@ -1,7 +1,8 @@
 {
+  "id": "/pdf/",
   "name": "PDF Form Filler",
-  "short_name": "PDF Filler",
-  "description": "Upload any PDF, detect form fields, fill them in-browser and export the completed file.",
+  "short_name": "PDF Form Filler",
+  "description": "Upload any PDF, detect form fields, fill them and export the completed file.",
   "start_url": "/pdf",
   "scope": "/pdf",
   "display": "standalone",

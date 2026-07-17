@@ -1,4 +1,5 @@
 {
+  "id": "/email/",
   "name": "Email Signature Generator",
   "short_name": "Email Sig",
   "description": "Design professional email signatures with live preview, AI taglines, and HTML export.",

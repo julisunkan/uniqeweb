@@ -1,4 +1,5 @@
 {
+  "id": "/flash/",
   "name": "AI Flashcards",
   "short_name": "Flashcards",
   "description": "Paste notes or upload a PDF — Groq AI generates interactive study flashcards instantly.",
