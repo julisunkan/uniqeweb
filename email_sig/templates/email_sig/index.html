@@ -12,6 +12,66 @@
 <meta name="theme-color" content="#ef4444">
 {% endblock %}
 
+{% block head %}
+<style>
+  /* ── Swatch grid ──────────────────────────────────────────────────── */
+  .swatch-grid { display:flex; flex-wrap:wrap; gap:9px; margin-top:8px; align-items:center; }
+  .swatch-btn {
+    width:30px; height:30px; border-radius:50%; cursor:pointer;
+    border:3px solid transparent;
+    transition:border-color .15s, transform .15s, box-shadow .15s;
+    flex-shrink:0;
+  }
+  .swatch-btn:hover  { transform:scale(1.12); }
+  .swatch-btn.active { border-color:#fff; transform:scale(1.18);
+                       box-shadow:0 0 0 2px rgba(255,255,255,.25); }
+  input[type="color"].swatch-btn {
+    padding:0; background:transparent; width:30px; height:30px;
+  }
+
+  /* ── Font-size toggle ────────────────────────────────────────────── */
+  .size-toggle { display:flex; gap:6px; margin-top:6px; }
+  .size-btn {
+    flex:1; padding:7px 0; border-radius:10px; font-size:13px; font-weight:700;
+    cursor:pointer; border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.05); color:var(--muted);
+    transition:background .15s, color .15s, border-color .15s;
+    text-align:center;
+  }
+  .size-btn.active {
+    background:var(--accent); color:#fff; border-color:transparent;
+  }
+
+  /* ── Template pills ──────────────────────────────────────────────── */
+  .tpl-grid { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .tpl-pill {
+    padding:6px 14px; border-radius:20px; font-size:12px; font-weight:700;
+    cursor:pointer; border:1px solid rgba(255,255,255,.15);
+    background:rgba(255,255,255,.06); color:var(--muted);
+    transition:background .15s, color .15s, border-color .15s;
+    white-space:nowrap;
+  }
+  .tpl-pill.active {
+    background:var(--accent); color:#fff; border-color:transparent;
+  }
+
+  /* ── Preview panel ───────────────────────────────────────────────── */
+  #previewWrap {
+    background:#f8f8f8; border-radius:12px; padding:24px;
+    min-height:200px; display:flex; align-items:center; justify-content:center;
+    overflow:auto;
+  }
+  #previewInner { width:100%; }
+
+  /* ── Layout ──────────────────────────────────────────────────────── */
+  .sig-section { display:flex; flex-direction:column; gap:20px; }
+
+  @media (min-width:900px) {
+    .sig-layout { display:grid; grid-template-columns:1fr 380px; gap:20px; align-items:start; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 
 <!-- HERO -->
@@ -20,15 +80,14 @@
   <div class="hero-sub">{{ t.email_hero_sub }}</div>
 </div>
 
-<!-- THREE-COLUMN GRID -->
-<div class="content-grid-3">
+<div class="sig-layout">
 
-  <!-- COLUMN 1-2: Form -->
-  <div class="col-span-2" style="display:flex;flex-direction:column;gap:20px">
+  <!-- ══ LEFT: Form ════════════════════════════════════════════════════ -->
+  <div class="sig-section">
 
-    <!-- Card A: Personal Info -->
+    <!-- A: Personal Info -->
     <div class="card card-red">
-      <div class="card-title">{{ t.personal_info }}</div>
+      <div class="card-title">👤 {{ t.personal_info }}</div>
       <div class="input-row">
         <div class="input-group">
           <label class="input-label" for="name">{{ t.full_name }}</label>
@@ -39,18 +98,15 @@
           <input class="input" id="jobTitle" type="text" placeholder="Senior Designer">
         </div>
       </div>
-      <div class="input-row">
-        <div class="input-group">
-          <label class="input-label" for="company">{{ t.company }}</label>
-          <input class="input" id="company" type="text" placeholder="Acme Inc.">
-        </div>
-        <div class="input-group"><!-- spacer --></div>
+      <div class="input-group" style="margin-top:12px">
+        <label class="input-label" for="company">{{ t.company }}</label>
+        <input class="input" id="company" type="text" placeholder="Acme Inc.">
       </div>
     </div>
 
-    <!-- Card B: Contact Details -->
+    <!-- B: Contact Details -->
     <div class="card card-orange">
-      <div class="card-title">{{ t.contact_details }}</div>
+      <div class="card-title">📬 {{ t.contact_details }}</div>
       <div class="input-row">
         <div class="input-group">
           <label class="input-label" for="emailAddr">{{ t.email_addr }}</label>
@@ -61,7 +117,7 @@
           <input class="input" id="phone" type="tel" placeholder="+1 555 000 0000">
         </div>
       </div>
-      <div class="input-row">
+      <div class="input-row" style="margin-top:12px">
         <div class="input-group">
           <label class="input-label" for="website">{{ t.website }}</label>
           <input class="input" id="website" type="url" placeholder="https://jane.dev">
@@ -71,98 +127,143 @@
           <input class="input" id="twitter" type="text" placeholder="@janesmith">
         </div>
       </div>
-      <div class="input-group">
+      <div class="input-group" style="margin-top:12px">
         <label class="input-label" for="linkedin">{{ t.linkedin_url }}</label>
         <input class="input" id="linkedin" type="url" placeholder="https://linkedin.com/in/jane">
       </div>
     </div>
 
-    <!-- Card C: Style -->
+    <!-- C: Style -->
     <div class="card card-yellow">
-      <div class="card-title">{{ t.style_label }}</div>
+      <div class="card-title">🎨 {{ t.style_label }}</div>
 
       <!-- Accent Color -->
       <div class="input-group">
         <label class="input-label">{{ t.accent_color }}</label>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;align-items:center">
-          <div class="swatch-btn" data-color="#ef4444" style="width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:#ef4444;transition:border-color .15s,transform .15s" title="Red"></div>
-          <div class="swatch-btn" data-color="#f97316" style="width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:#f97316;transition:border-color .15s,transform .15s" title="Orange"></div>
-          <div class="swatch-btn" data-color="#eab308" style="width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:#eab308;transition:border-color .15s,transform .15s" title="Yellow"></div>
-          <div class="swatch-btn" data-color="#22c55e" style="width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:#22c55e;transition:border-color .15s,transform .15s" title="Green"></div>
-          <div class="swatch-btn" data-color="#3b82f6" style="width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:#3b82f6;transition:border-color .15s,transform .15s" title="Blue"></div>
-          <div class="swatch-btn" data-color="#a855f7" style="width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:#a855f7;transition:border-color .15s,transform .15s" title="Purple"></div>
-          <div class="swatch-btn" data-color="#ec4899" style="width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:#ec4899;transition:border-color .15s,transform .15s" title="Pink"></div>
-          <div class="swatch-btn" data-color="#14b8a6" style="width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:#14b8a6;transition:border-color .15s,transform .15s" title="Teal"></div>
-          <input type="color" id="accentColor" value="#ef4444"
-                 style="width:36px;height:36px;border-radius:50%;border:3px solid transparent;padding:0;cursor:pointer;background:transparent">
+        <div class="swatch-grid">
+          <!-- Row 1 -->
+          <div class="swatch-btn" data-color="#dc2626" style="background:#dc2626" title="Crimson"></div>
+          <div class="swatch-btn" data-color="#f43f5e" style="background:#f43f5e" title="Rose"></div>
+          <div class="swatch-btn" data-color="#f97316" style="background:#f97316" title="Orange"></div>
+          <div class="swatch-btn" data-color="#eab308" style="background:#eab308" title="Yellow"></div>
+          <div class="swatch-btn" data-color="#84cc16" style="background:#84cc16" title="Lime"></div>
+          <div class="swatch-btn" data-color="#22c55e" style="background:#22c55e" title="Emerald"></div>
+          <div class="swatch-btn" data-color="#10b981" style="background:#10b981" title="Teal"></div>
+          <div class="swatch-btn" data-color="#06b6d4" style="background:#06b6d4" title="Cyan"></div>
+          <!-- Row 2 -->
+          <div class="swatch-btn" data-color="#3b82f6" style="background:#3b82f6" title="Blue"></div>
+          <div class="swatch-btn" data-color="#6366f1" style="background:#6366f1" title="Indigo"></div>
+          <div class="swatch-btn" data-color="#a855f7" style="background:#a855f7" title="Purple"></div>
+          <div class="swatch-btn" data-color="#d946ef" style="background:#d946ef" title="Fuchsia"></div>
+          <div class="swatch-btn" data-color="#ec4899" style="background:#ec4899" title="Pink"></div>
+          <div class="swatch-btn" data-color="#78716c" style="background:#78716c" title="Warm Gray"></div>
+          <div class="swatch-btn" data-color="#475569" style="background:#475569" title="Slate"></div>
+          <div class="swatch-btn" data-color="#1e293b" style="background:#1e293b" title="Navy"></div>
+          <!-- Custom picker -->
+          <input type="color" id="accentColor" value="#dc2626" class="swatch-btn" title="Custom color">
         </div>
       </div>
 
       <!-- Font -->
-      <div class="input-group" style="margin-top:14px">
+      <div class="input-group" style="margin-top:16px">
         <label class="input-label" for="font">{{ t.font_label }}</label>
         <select class="input" id="font">
-          <option value="Arial, sans-serif">Arial</option>
-          <option value="Georgia, serif">Georgia</option>
-          <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-          <option value="Verdana, sans-serif">Verdana</option>
-          <option value="'Courier New', monospace">Courier New</option>
+          <option value="Arial, Helvetica, sans-serif">Arial</option>
+          <option value="Helvetica, Arial, sans-serif">Helvetica</option>
+          <option value="Verdana, Geneva, sans-serif">Verdana</option>
+          <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
+          <option value="'Trebuchet MS', Helvetica, sans-serif">Trebuchet MS</option>
+          <option value="'Century Gothic', CenturyGothic, sans-serif">Century Gothic</option>
+          <option value="'Lucida Sans Unicode', 'Lucida Grande', sans-serif">Lucida Sans</option>
+          <option value="Georgia, 'Times New Roman', serif">Georgia</option>
+          <option value="'Times New Roman', Times, serif">Times New Roman</option>
+          <option value="'Palatino Linotype', 'Book Antiqua', Palatino, serif">Palatino</option>
+          <option value="Garamond, 'Adobe Garamond Pro', serif">Garamond</option>
+          <option value="'Courier New', Courier, monospace">Courier New</option>
         </select>
       </div>
 
+      <!-- Font Size -->
+      <div class="input-group" style="margin-top:16px">
+        <label class="input-label">Font Size</label>
+        <div class="size-toggle">
+          <button class="size-btn" data-size="small"  type="button">S</button>
+          <button class="size-btn active" data-size="medium" type="button">M</button>
+          <button class="size-btn" data-size="large"  type="button">L</button>
+        </div>
+        <input type="hidden" id="fontSizeInput" value="medium">
+      </div>
+
       <!-- Template -->
-      <div class="input-group" style="margin-top:14px">
+      <div class="input-group" style="margin-top:18px">
         <label class="input-label">{{ t.template_label }}</label>
         <input type="hidden" id="templateInput" value="modern">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-          <button class="btn btn-primary btn-sm template-pill" data-tpl="modern">{{ t.tpl_modern }}</button>
-          <button class="btn btn-ghost btn-sm template-pill" data-tpl="classic">{{ t.tpl_classic }}</button>
-          <button class="btn btn-ghost btn-sm template-pill" data-tpl="minimal">{{ t.tpl_minimal }}</button>
+        <div class="tpl-grid">
+          <button class="tpl-pill active" data-tpl="modern"    type="button">Modern</button>
+          <button class="tpl-pill"        data-tpl="bold"      type="button">Bold</button>
+          <button class="tpl-pill"        data-tpl="executive" type="button">Executive</button>
+          <button class="tpl-pill"        data-tpl="classic"   type="button">Classic</button>
+          <button class="tpl-pill"        data-tpl="creative"  type="button">Creative</button>
+          <button class="tpl-pill"        data-tpl="elegant"   type="button">Elegant</button>
+          <button class="tpl-pill"        data-tpl="card"      type="button">Card</button>
+          <button class="tpl-pill"        data-tpl="minimal"   type="button">Minimal</button>
         </div>
       </div>
     </div>
 
-    <!-- Card D: AI Tagline -->
+    <!-- D: AI Tagline -->
     <div class="card card-green">
       <div class="card-title">✨ {{ t.ai_tagline }}</div>
       <div class="input-group">
-        <input class="input" id="tagline" type="text" placeholder="e.g. Designing the future, one pixel at a time.">
+        <input class="input" id="tagline" type="text"
+               placeholder="e.g. Designing the future, one pixel at a time.">
       </div>
       <div style="display:flex;gap:10px;margin-top:10px;align-items:center;flex-wrap:wrap">
-        <button class="btn btn-primary btn-sm" id="aiBtn" onclick="generateTagline()">✨ {{ t.generate_ai }}</button>
+        <button class="btn btn-primary btn-sm" id="aiBtn" type="button" onclick="generateTagline()">
+          ✨ {{ t.generate_ai }}
+        </button>
         <span style="font-size:11px;color:var(--muted)">{{ t.ai_powered_note }}</span>
       </div>
     </div>
 
-    <!-- Export buttons -->
+    <!-- Export -->
     <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <button class="btn btn-primary" id="copyBtn" onclick="copyHTML()">📋 {{ t.copy_html }}</button>
-      <button class="btn btn-secondary" id="dlBtn" onclick="downloadHTML()">⬇ {{ t.download_html }}</button>
+      <button class="btn btn-primary"   id="copyBtn" type="button" onclick="copyHTML()">📋 {{ t.copy_html }}</button>
+      <button class="btn btn-secondary" id="dlBtn"   type="button" onclick="downloadHTML()">⬇ {{ t.download_html }}</button>
     </div>
-  </div>
 
-  <!-- COLUMN 3: Live Preview -->
+  </div><!-- /sig-section -->
+
+  <!-- ══ RIGHT: Preview ════════════════════════════════════════════════ -->
   <div style="display:flex;flex-direction:column;gap:16px">
-    <div class="card card-blue card-glow" style="flex:1">
+
+    <div class="card card-blue card-glow" style="position:sticky;top:16px">
       <div class="card-title">👁 {{ t.live_preview }}</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">{{ t.auto_updates }}</div>
-      <div id="previewContainer"
-           style="background:#fff;border-radius:10px;padding:20px;min-height:180px;display:flex;align-items:center;justify-content:center">
-        <div id="previewInner" style="width:100%">
-          <p style="color:#aaa;font-size:13px;text-align:center">{{ t.fill_details_left }}</p>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px">{{ t.auto_updates }}</div>
+      <div id="previewWrap">
+        <div id="previewInner">
+          <p style="color:#bbb;font-size:13px;text-align:center;margin:0">{{ t.fill_details_left }}</p>
         </div>
+      </div>
+
+      <!-- Template mini-labels shown under preview -->
+      <div style="margin-top:12px;font-size:10px;color:var(--muted);text-transform:uppercase;
+                  letter-spacing:.05em;text-align:center" id="currentTplLabel">
+        Template: <strong id="tplLabelText">Modern</strong>
       </div>
     </div>
 
     <!-- Tips -->
     <div class="card card-purple">
       <div class="card-title">💡 Tips</div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.7">
+      <div style="font-size:13px;color:var(--muted);line-height:1.8">
         <div>① {{ t.fill_details_left }}</div>
-        <div style="margin-top:6px">② {{ t.pick_style }}</div>
-        <div style="margin-top:6px">③ {{ t.optionally_ai }}</div>
+        <div>② {{ t.pick_style }}</div>
+        <div>③ {{ t.optionally_ai }}</div>
+        <div>④ Use <strong>Copy HTML</strong> and paste directly into Gmail, Outlook, or Apple Mail.</div>
       </div>
     </div>
+
   </div>
 
 </div>
@@ -172,13 +273,14 @@
 <script>
 function $(id) { return document.getElementById(id); }
 
+// ── Debounced preview update ────────────────────────────────────────────
 let _debounce = null;
 function scheduleUpdate() {
   clearTimeout(_debounce);
-  _debounce = setTimeout(updatePreview, 300);
+  _debounce = setTimeout(updatePreview, 280);
 }
 
-// Map form field IDs → backend parameter names
+// ── Collect all form values → backend keys ──────────────────────────────
 function getPayload() {
   return {
     name:         $('name').value,
@@ -192,29 +294,28 @@ function getPayload() {
     tagline:      $('tagline').value,
     accent_color: $('accentColor').value,
     font:         $('font').value,
+    font_size:    $('fontSizeInput').value,
     template:     $('templateInput').value,
   };
 }
 
+// ── Live preview (async — OK here, only updates DOM not clipboard) ───────
 function updatePreview() {
-  const payload = getPayload();
   fetch('/email/render-preview', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(getPayload()),
   })
     .then(r => r.json())
     .then(d => { if (d.html) $('previewInner').innerHTML = d.html; })
     .catch(() => {});
 }
 
+// ── Copy HTML — synchronous DOM read to preserve user-gesture ───────────
 function copyHTML() {
-  // Read the already-rendered HTML from the live preview DOM — synchronously,
-  // so the clipboard write stays inside the user-gesture handler on mobile.
   const inner = $('previewInner');
-  const html = inner ? inner.innerHTML : '';
-  const placeholder = !html || html.includes('fill_details') || html.trim().startsWith('<p style');
-  if (placeholder) {
+  const html  = inner ? inner.innerHTML : '';
+  if (!html || html.includes('fill_details_left') || /^<p\s/i.test(html.trim())) {
     if (typeof showToast === 'function') showToast('{{ t.fill_details_left }}', 'error');
     return;
   }
@@ -222,7 +323,6 @@ function copyHTML() {
 }
 
 function _writeClipboard(text) {
-  // Modern Clipboard API (requires secure context + user gesture)
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text)
       .then(() => { if (typeof showToast === 'function') showToast('Copied!', 'success'); })
@@ -233,26 +333,23 @@ function _writeClipboard(text) {
 }
 
 function _execCommandCopy(text) {
-  // Fallback: textarea + execCommand — works on older mobile browsers
   var ta = document.createElement('textarea');
   ta.value = text;
   ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none';
   document.body.appendChild(ta);
-  ta.focus();
-  ta.select();
+  ta.focus(); ta.select();
   var ok = false;
   try { ok = document.execCommand('copy'); } catch (e) {}
   document.body.removeChild(ta);
-  if (typeof showToast === 'function') {
+  if (typeof showToast === 'function')
     showToast(ok ? 'Copied!' : 'Copy failed', ok ? 'success' : 'error');
-  }
 }
 
 function downloadHTML() {
-  const params = new URLSearchParams(getPayload());
-  window.open('/email/export.html?' + params.toString());
+  window.open('/email/export.html?' + new URLSearchParams(getPayload()).toString());
 }
 
+// ── AI tagline ──────────────────────────────────────────────────────────
 function generateTagline() {
   const btn = $('aiBtn');
   if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
@@ -273,46 +370,58 @@ function generateTagline() {
     });
 }
 
-// ── Color swatches ─────────────────────────────────────────────────────
+// ── Colour swatches ─────────────────────────────────────────────────────
 document.querySelectorAll('.swatch-btn').forEach(function (sw) {
   sw.addEventListener('click', function () {
-    document.querySelectorAll('.swatch-btn').forEach(function (s) {
-      s.style.borderColor = 'transparent'; s.style.transform = 'scale(1)';
-    });
-    sw.style.borderColor = 'white'; sw.style.transform = 'scale(1.15)';
-    $('accentColor').value = sw.dataset.color;
+    document.querySelectorAll('.swatch-btn').forEach(function (s) { s.classList.remove('active'); });
+    sw.classList.add('active');
+    if (sw.dataset.color) $('accentColor').value = sw.dataset.color;
     scheduleUpdate();
   });
 });
-// Set first swatch active by default
-(function () {
-  var first = document.querySelector('.swatch-btn');
-  if (first) { first.style.borderColor = 'white'; first.style.transform = 'scale(1.15)'; }
-})();
+document.querySelector('.swatch-btn').classList.add('active');   // first swatch active by default
+$('accentColor').addEventListener('input', function () {
+  document.querySelectorAll('.swatch-btn').forEach(function (s) { s.classList.remove('active'); });
+  this.classList.add('active');
+  scheduleUpdate();
+});
 
-// ── Template pill buttons ──────────────────────────────────────────────
-document.querySelectorAll('.template-pill').forEach(function (btn) {
+// ── Font-size buttons ───────────────────────────────────────────────────
+document.querySelectorAll('.size-btn').forEach(function (btn) {
   btn.addEventListener('click', function () {
-    document.querySelectorAll('.template-pill').forEach(function (b) {
-      b.className = 'btn btn-ghost btn-sm template-pill';
-    });
-    btn.className = 'btn btn-primary btn-sm template-pill';
-    $('templateInput').value = btn.dataset.tpl;
+    document.querySelectorAll('.size-btn').forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    $('fontSizeInput').value = btn.dataset.size;
     scheduleUpdate();
   });
 });
 
-// ── Attach input events ────────────────────────────────────────────────
-['name','jobTitle','company','emailAddr','phone','website','linkedin','twitter','tagline','font'].forEach(function (id) {
-  var el = $(id);
-  if (!el) return;
-  el.addEventListener('input', scheduleUpdate);
-  el.addEventListener('change', scheduleUpdate);
+// ── Template pills ──────────────────────────────────────────────────────
+const TPL_LABELS = {
+  modern:'Modern', bold:'Bold', executive:'Executive', classic:'Classic',
+  creative:'Creative', elegant:'Elegant', card:'Card', minimal:'Minimal'
+};
+document.querySelectorAll('.tpl-pill').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    document.querySelectorAll('.tpl-pill').forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    $('templateInput').value = btn.dataset.tpl;
+    var lbl = $('tplLabelText');
+    if (lbl) lbl.textContent = TPL_LABELS[btn.dataset.tpl] || btn.dataset.tpl;
+    scheduleUpdate();
+  });
 });
 
-$('accentColor').addEventListener('input', scheduleUpdate);
+// ── Watch all text/select inputs ────────────────────────────────────────
+['name','jobTitle','company','emailAddr','phone','website','linkedin','twitter','tagline','font']
+  .forEach(function (id) {
+    var el = $(id);
+    if (!el) return;
+    el.addEventListener('input',  scheduleUpdate);
+    el.addEventListener('change', scheduleUpdate);
+  });
 
-// ── Initial preview ────────────────────────────────────────────────────
-setTimeout(updatePreview, 600);
+// ── Initial render ──────────────────────────────────────────────────────
+setTimeout(updatePreview, 500);
 </script>
 {% endblock %}
