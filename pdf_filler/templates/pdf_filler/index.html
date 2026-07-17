@@ -4,89 +4,148 @@
 {% block body_class %}app-pdf{% endblock %}
 {% block header_icon %}📄{% endblock %}
 {% block header_title %}{{ t.pdf_header }}{% endblock %}
-
 {% block back_btn %}{% endblock %}
 
+{% block head %}
+<style>
+  .upload-drop-zone {
+    border: 2px dashed rgba(255,255,255,0.15);
+    border-radius: 16px; padding: 36px 20px; text-align: center;
+    cursor: pointer; transition: border-color .2s, background .2s;
+    background: rgba(255,255,255,0.02);
+  }
+  .upload-drop-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(59,130,246,.08);
+  }
+  .upload-drop-zone input[type=file] { display: none; }
+  .drop-icon { font-size: 48px; margin-bottom: 10px; }
+  .drop-primary { font-weight: 700; font-size: 15px; color: var(--text); margin-bottom: 4px; }
+  .drop-sub { font-size: 12px; color: var(--muted); }
+  .drop-chosen { font-weight: 700; color: var(--accent); font-size: 14px; margin-top: 8px; }
+  .upload-history-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 10px;
+    background: rgba(255,255,255,0.03); margin-bottom: 8px;
+    text-decoration: none; color: inherit;
+    border: 1px solid transparent; transition: border-color .15s, background .15s;
+  }
+  .upload-history-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+  .upload-history-item .name { font-weight: 700; font-size: 13px; flex: 1; }
+  .upload-history-item .meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .delete-btn { opacity: .5; transition: opacity .15s; }
+  .delete-btn:hover { opacity: 1; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="hero">
+
+<!-- Hero -->
+<div class="hero" style="margin-bottom:24px">
   <div class="hero-title">{{ t.pdf_hero_title }}</div>
   <div class="hero-sub">{{ t.pdf_hero_sub }}</div>
 </div>
 
 <div class="content-grid">
 
-  <!-- LEFT: Upload card -->
+  <!-- LEFT: Upload -->
   <div class="card card-blue card-glow">
     <div class="card-title">{{ t.upload_pdf_card }}</div>
-    <form method="POST" action="/pdf/upload" enctype="multipart/form-data" id="uploadForm">
-      <div class="upload-area" id="uploadArea">
-        <div class="upload-icon">📋</div>
-        <div class="upload-text">
-          <strong>{{ t.choose_pdf }}</strong><br>
-          {{ t.supports_pdf }}
-        </div>
+
+    <form method="POST" action="{{ url_for('pdf_filler.upload') }}"
+          enctype="multipart/form-data" id="uploadForm">
+      <div class="upload-drop-zone" id="dropZone">
+        <div class="drop-icon" id="dropIcon">📋</div>
+        <div class="drop-primary" id="dropPrimary">{{ t.choose_pdf }}</div>
+        <div class="drop-sub">{{ t.supports_pdf }}</div>
+        <div class="drop-chosen" id="dropChosen" style="display:none"></div>
         <input type="file" name="pdf_file" accept=".pdf" id="pdfInput" required>
       </div>
-      <button type="submit" class="btn btn-primary btn-full" id="uploadBtn" style="margin-top:14px">
+
+      <button type="submit" class="btn btn-primary btn-full"
+              id="uploadBtn" style="margin-top:16px">
         {{ t.upload_detect_btn }}
       </button>
     </form>
+
+    <!-- How it works -->
+    <div style="margin-top:24px">
+      <div class="section-label" style="--accent:var(--blue,#3b82f6);margin-bottom:12px">
+        {{ t.pdf_how_works }}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;gap:10px;align-items:center;font-size:13px">
+          <span style="font-size:20px">📤</span>
+          <span>{{ t.pdf_step1 }}</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:13px">
+          <span style="font-size:20px">🔍</span>
+          <span>{{ t.pdf_step2 }}</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:13px">
+          <span style="font-size:20px">✏️</span>
+          <span>{{ t.pdf_step3 }}</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:13px">
+          <span style="font-size:20px">📥</span>
+          <span>{{ t.pdf_step4 }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- RIGHT: How it works + history -->
-  <div style="display:flex;flex-direction:column;gap:20px">
-    <div class="card card-green">
-      <div class="card-title">{{ t.pdf_how_works }}</div>
-      <div class="list-item">
-        <div class="list-item-icon">1️⃣</div>
-        <div class="list-item-content">
-          <div class="list-item-title">{{ t.pdf_step1 }}</div>
-        </div>
-      </div>
-      <div class="list-item">
-        <div class="list-item-icon">2️⃣</div>
-        <div class="list-item-content">
-          <div class="list-item-title">{{ t.pdf_step2 }}</div>
-        </div>
-      </div>
-      <div class="list-item">
-        <div class="list-item-icon">3️⃣</div>
-        <div class="list-item-content">
-          <div class="list-item-title">{{ t.pdf_step3 }}</div>
-        </div>
-      </div>
-    </div>
+  <!-- RIGHT: Upload history -->
+  <div class="card card-yellow">
+    <div class="card-title">{{ t.recent_uploads }}</div>
 
-    <div class="card card-blue">
-      <div class="card-title">{{ t.recent_uploads }}</div>
-      {% if uploads %}
-        {% for upload in uploads %}
-        <a href="/pdf/fill/{{ upload['id'] }}" style="text-decoration:none;color:inherit">
-          <div class="list-item">
-            <div class="list-item-icon">📄</div>
-            <div class="list-item-content">
-              <div class="list-item-title">{{ upload['original_name'] }}</div>
-              <div class="list-item-sub">
-                {% if upload['has_fields'] %}
-                  <span class="chip chip-blue">{{ t.form_fields_chip }}</span>
-                {% else %}
-                  <span class="chip chip-orange">{{ t.no_fields_chip }}</span>
-                {% endif %}
-                &nbsp;{{ upload['created_at'][:16] if upload['created_at'] else '' }}
-              </div>
+    {% if uploads %}
+      {% for upload in uploads %}
+      <div style="display:flex;align-items:center;gap:8px">
+        <a href="{{ url_for('pdf_filler.fill', file_id=upload['id']) }}"
+           class="upload-history-item" style="flex:1">
+          <span style="font-size:22px">📄</span>
+          <div style="flex:1;overflow:hidden">
+            <div class="name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              {{ upload['original_name'] }}
             </div>
-            <div class="list-item-action">›</div>
+            <div class="meta">
+              {% if upload['has_fields'] %}
+                <span class="chip chip-blue" style="font-size:10px">{{ t.form_fields_chip }}</span>
+              {% else %}
+                <span class="chip chip-orange" style="font-size:10px">{{ t.no_fields_chip }}</span>
+              {% endif %}
+              &nbsp;{{ upload['created_at'][:16] if upload['created_at'] else '' }}
+            </div>
           </div>
+          <span style="color:var(--muted)">›</span>
         </a>
-        {% endfor %}
-      {% else %}
-        <div class="empty-state">
-          <div class="empty-state-icon">📭</div>
-          <div class="empty-state-title">{{ t.no_uploads }}</div>
-          <div class="empty-state-sub">{{ t.no_uploads_sub }}</div>
-        </div>
-      {% endif %}
-    </div>
+
+        <!-- Delete button -->
+        <form method="POST" action="{{ url_for('pdf_filler.delete', file_id=upload['id']) }}">
+          <button type="button" class="btn btn-sm btn-danger delete-btn"
+                  onclick="confirmDelete(this)">🗑</button>
+          <span class="inline-confirm" style="display:none;gap:4px;align-items:center">
+            <span style="font-size:11px;color:var(--muted)">{{ t.sure }}</span>
+            <button class="btn btn-sm btn-danger" type="submit">{{ t.yes }}</button>
+            <button class="btn btn-sm btn-secondary" type="button"
+                    onclick="cancelDelete(this)">{{ t.no }}</button>
+          </span>
+        </form>
+
+        {% if upload['output_name'] %}
+          <a href="{{ url_for('pdf_filler.download', file_id=upload['id']) }}"
+             class="btn btn-sm btn-green" title="{{ t.pdf_download_btn }}">📥</a>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <div class="empty-state-title">{{ t.no_uploads }}</div>
+        <div class="empty-state-sub">{{ t.no_uploads_sub }}</div>
+      </div>
+    {% endif %}
   </div>
 
 </div>
@@ -94,42 +153,62 @@
 
 {% block scripts %}
 <script>
-  const pdfInput = document.getElementById('pdfInput');
-  const uploadArea = document.getElementById('uploadArea');
+(function () {
+  const dropZone  = document.getElementById('dropZone');
+  const pdfInput  = document.getElementById('pdfInput');
+  const dropIcon  = document.getElementById('dropIcon');
+  const dropPrimary= document.getElementById('dropPrimary');
+  const dropChosen= document.getElementById('dropChosen');
   const uploadBtn = document.getElementById('uploadBtn');
-  const uploadForm = document.getElementById('uploadForm');
+  const uploadForm= document.getElementById('uploadForm');
 
+  function setFile(file) {
+    dropIcon.textContent  = '✅';
+    dropPrimary.textContent = '';
+    dropChosen.style.display = '';
+    dropChosen.textContent = file.name;
+    dropZone.style.borderColor = 'var(--accent)';
+  }
+
+  dropZone.addEventListener('click', function () { pdfInput.click(); });
   pdfInput.addEventListener('change', function () {
-    if (this.files && this.files[0]) {
-      const name = this.files[0].name;
-      uploadArea.querySelector('.upload-text').innerHTML =
-        '<strong>' + name + '</strong>';
+    if (this.files && this.files[0]) setFile(this.files[0]);
+  });
+
+  dropZone.addEventListener('dragover',  function (e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', function ()  { dropZone.classList.remove('drag-over'); });
+  dropZone.addEventListener('drop', function (e) {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const files = e.dataTransfer.files;
+    if (files.length && files[0].type === 'application/pdf') {
+      // Transfer to input
+      const dt = new DataTransfer();
+      dt.items.add(files[0]);
+      pdfInput.files = dt.files;
+      setFile(files[0]);
     }
   });
 
   uploadForm.addEventListener('submit', function () {
     if (pdfInput.files && pdfInput.files[0]) {
-      setLoading(uploadBtn, true, '⏳');
+      if (typeof setLoading === 'function') setLoading(uploadBtn, true, '⏳');
     }
   });
 
-  // Drag-and-drop
-  uploadArea.addEventListener('dragover', function (e) {
-    e.preventDefault();
-    uploadArea.classList.add('drag-over');
-  });
-  uploadArea.addEventListener('dragleave', function () {
-    uploadArea.classList.remove('drag-over');
-  });
-  uploadArea.addEventListener('drop', function (e) {
-    e.preventDefault();
-    uploadArea.classList.remove('drag-over');
-    const files = e.dataTransfer.files;
-    if (files.length) {
-      pdfInput.files = files;
-      uploadArea.querySelector('.upload-text').innerHTML =
-        '<strong>' + files[0].name + '</strong>';
-    }
-  });
+  // Delete confirm
+  window.confirmDelete = function (btn) {
+    const form = btn.closest('form');
+    btn.style.display = 'none';
+    const confirm = form.querySelector('.inline-confirm');
+    confirm.style.display = 'flex';
+  };
+  window.cancelDelete = function (btn) {
+    const form = btn.closest('form');
+    const confirm = form.querySelector('.inline-confirm');
+    confirm.style.display = 'none';
+    form.querySelector('.delete-btn').style.display = '';
+  };
+})();
 </script>
 {% endblock %}

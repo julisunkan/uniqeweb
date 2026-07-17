@@ -1,0 +1,259 @@
+# Build a Complete PDF Form Filler Web Application
+
+Create a production-ready PDF Form Filler web application using **Python 3** and **Flask**.
+
+## Objective
+
+The application should allow users to:
+
+1. Upload an interactive PDF (AcroForm).
+2. Automatically detect all fillable fields in the PDF.
+3. Generate an HTML form dynamically based on those fields.
+4. Allow users to enter values into the generated form.
+5. Fill the original PDF with the submitted values.
+6. Preview the completed PDF in the browser.
+7. Download the completed PDF.
+8. Optionally flatten the PDF so the filled values become permanent.
+
+---
+
+## Technology Stack
+
+* Python 3
+* Flask
+* pypdf
+* Bootstrap 5
+* Jinja2
+* HTML/CSS/JavaScript
+
+Use a modular Flask project structure.
+
+```
+project/
+│
+├── app.py
+├── config.py
+├── requirements.txt
+├── services/
+│   ├── pdf_service.py
+│   └── file_service.py
+├── templates/
+│   ├── base.html
+│   ├── index.html
+│   ├── form.html
+│   └── preview.html
+├── static/
+│   ├── css/
+│   └── js/
+├── uploads/
+├── output/
+└── temp/
+```
+
+---
+
+## Features
+
+### Dashboard
+
+A clean Bootstrap interface with:
+
+* Upload PDF button
+* Recent uploaded files
+* Generate Form button
+* Download button
+* Preview button
+
+---
+
+### PDF Upload
+
+Users can upload only PDF files.
+
+Requirements:
+
+* Validate file extension.
+* Validate MIME type.
+* Limit upload size to 50 MB.
+* Store uploads in the uploads directory.
+* Display success/error messages.
+
+---
+
+### Read PDF Fields
+
+Use pypdf to read AcroForm fields.
+
+Automatically extract:
+
+* field name
+* field type
+* page number
+
+Support:
+
+* Text fields
+* Checkboxes
+* Radio buttons
+* Dropdowns
+* List boxes
+* Multiline text
+
+---
+
+### Dynamic HTML Form
+
+Generate Bootstrap forms automatically.
+
+Examples:
+
+Text field →
+
+```
+<input class="form-control">
+```
+
+Checkbox →
+
+```
+<input type="checkbox">
+```
+
+Dropdown →
+
+```
+<select class="form-select">
+```
+
+Radio →
+
+Bootstrap radio buttons.
+
+The application should automatically choose the correct HTML control.
+
+---
+
+### Fill PDF
+
+When the user submits the form:
+
+* Read all submitted values.
+* Fill every page of the PDF.
+* Preserve existing formatting.
+* Save the completed PDF in the output folder.
+
+---
+
+### Preview
+
+Embed the filled PDF using:
+
+```
+<iframe>
+```
+
+or
+
+```
+<object>
+```
+
+Include Download and Back buttons.
+
+---
+
+### Download
+
+Allow downloading the generated PDF with the filename:
+
+```
+OriginalName_Filled.pdf
+```
+
+---
+
+### UI Requirements
+
+Use Bootstrap 5.
+
+Include:
+
+* Responsive layout
+* Navbar
+* Cards
+* Icons
+* Flash messages
+* Loading spinner during PDF processing
+* Progress bar during upload
+* Mobile-friendly layout
+
+---
+
+### Error Handling
+
+Gracefully handle:
+
+* Invalid PDFs
+* Corrupted files
+* Missing form fields
+* Unsupported PDFs
+* Empty uploads
+
+Display friendly Bootstrap alerts.
+
+---
+
+### Logging
+
+Create application logs including:
+
+* Uploads
+* Errors
+* Generated PDFs
+* Processing time
+
+---
+
+### Security
+
+Implement:
+
+* Secure filenames
+* CSRF protection
+* Upload validation
+* Maximum upload size
+* Prevent directory traversal
+* Temporary file cleanup
+* Save templates
+* Multiple PDF templates
+* Search uploaded templates
+* Duplicate template
+* Delete template
+* Download history
+* Dark mode
+* Drag-and-drop upload
+* Auto-save entered form values
+* Export submitted data as CSV
+* Import data from CSV to fill PDFs in bulk
+* Bulk PDF generation
+* QR code insertion
+* Signature image upload and placement
+* Watermark option
+* Password-protect generated PDFs
+* Flatten completed PDFs
+* REST API endpoint for programmatic PDF filling
+
+---
+
+### Code Quality
+
+* Use Blueprints where appropriate.
+* Separate business logic into service modules.
+* Use reusable helper functions.
+* Add comments for major functions.
+* Follow PEP 8 style guidelines.
+* Use type hints where practical.
+
+
+
+and allow a user to upload a fillable PDF, dynamically generate a web form from the PDF fields, fill the PDF, preview it, and download the completed document.

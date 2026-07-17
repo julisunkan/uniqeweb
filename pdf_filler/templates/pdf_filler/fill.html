@@ -1,76 +1,258 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ t.pdf_page_title }}{% endblock %}
+{% block title %}{{ original_name }} — {{ t.pdf_fill_page_title }}{% endblock %}
 {% block body_class %}app-pdf{% endblock %}
 {% block header_icon %}📄{% endblock %}
 {% block header_title %}{{ t.pdf_header }}{% endblock %}
-
 {% block back_btn %}{% endblock %}
+
+{% block head %}
+<style>
+  .field-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 16px 18px;
+    transition: border-color .2s;
+  }
+  .field-card:focus-within { border-color: var(--accent); }
+  .field-type-badge {
+    display: inline-block;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .6px; padding: 2px 7px; border-radius: 20px;
+    background: rgba(255,255,255,0.08); color: var(--muted);
+    margin-left: 8px; vertical-align: middle;
+  }
+  .field-label {
+    font-size: 13px; font-weight: 700; color: var(--text);
+    margin-bottom: 8px; display: flex; align-items: center;
+  }
+  .radio-group, .checkbox-group {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;
+  }
+  .radio-pill, .check-pill {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 20px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer; font-size: 13px; color: var(--text);
+    transition: background .15s, border-color .15s;
+  }
+  .radio-pill:has(input:checked),
+  .check-pill:has(input:checked) {
+    background: rgba(var(--accent-rgb,59,130,246),.18);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .radio-pill input, .check-pill input { display: none; }
+  .fields-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .fields-grid .field-card.wide { grid-column: 1 / -1; }
+  .section-divider {
+    display: flex; align-items: center; gap: 10px;
+    margin: 20px 0 14px; color: var(--muted); font-size: 11px;
+    font-weight: 800; text-transform: uppercase; letter-spacing: .8px;
+  }
+  .section-divider::after {
+    content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.06);
+  }
+  .action-bar {
+    position: sticky; bottom: 0;
+    background: var(--bg); border-top: 1px solid rgba(255,255,255,0.07);
+    padding: 14px 0; margin-top: 24px; z-index: 10;
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  }
+  .stat-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 20px; font-size: 12px;
+    background: rgba(255,255,255,0.06); color: var(--muted);
+  }
+  select.input option { background: #1e1e2e; color: #fff; }
+</style>
+{% endblock %}
 
 {% block content %}
 
-<!-- File header card -->
+<!-- File header -->
 <div class="card card-blue" style="margin-bottom:20px">
-  <div style="display:flex;align-items:center;gap:12px">
-    <span style="font-size:32px">📋</span>
-    <div>
-      <div class="fw-black" style="font-size:18px">{{ original_name }}</div>
-      <div class="text-muted" style="font-size:13px;margin-top:4px">
+  <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <span style="font-size:36px">📋</span>
+    <div style="flex:1">
+      <div style="font-weight:900;font-size:18px">{{ original_name }}</div>
+      <div style="margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         {% if has_fields %}
           <span class="chip chip-blue">{{ fields|length }} {{ t.form_field_label }}</span>
+          {% set text_count = fields | selectattr('type','in',['text','multiline']) | list | length %}
+          {% set check_count = fields | selectattr('type','equalto','checkbox') | list | length %}
+          {% set radio_count = fields | selectattr('type','equalto','radio') | list | length %}
+          {% set sel_count   = fields | selectattr('type','in',['select','listbox']) | list | length %}
+          {% if text_count %}
+            <span class="stat-pill">📝 {{ text_count }} {{ t.pdf_type_text }}</span>
+          {% endif %}
+          {% if check_count %}
+            <span class="stat-pill">☑️ {{ check_count }} {{ t.pdf_type_checkbox }}</span>
+          {% endif %}
+          {% if radio_count %}
+            <span class="stat-pill">🔘 {{ radio_count }} {{ t.pdf_type_radio }}</span>
+          {% endif %}
+          {% if sel_count %}
+            <span class="stat-pill">📋 {{ sel_count }} {{ t.pdf_type_select }}</span>
+          {% endif %}
         {% else %}
-          <span class="chip chip-orange">{{ t.no_uploads }}</span>
+          <span class="chip chip-orange">{{ t.no_fields_chip }}</span>
         {% endif %}
       </div>
     </div>
+    <a href="{{ url_for('pdf_filler.index') }}" class="btn btn-secondary btn-sm">
+      ← {{ t.new_upload }}
+    </a>
   </div>
 </div>
 
 <!-- Fill form -->
-<form method="POST" action="/pdf/fill/{{ upload_id }}" id="fillForm">
+<form method="POST" action="{{ url_for('pdf_filler.fill_submit', file_id=file_id) }}"
+      id="fillForm">
 
   {% if has_fields %}
-    <div class="content-grid">
-      {% for field_name in fields %}
-      <div class="input-group">
-        <label class="input-label" for="field_{{ loop.index }}">{{ field_name }}</label>
-        <input
-          class="input"
-          type="text"
-          id="field_{{ loop.index }}"
-          name="field_{{ field_name }}"
-          placeholder="{{ t.enter_value }}"
-          autocomplete="off"
-        >
+
+    <!-- Text / Multiline fields -->
+    {% set text_fields = fields | selectattr('type','in',['text','multiline']) | list %}
+    {% if text_fields %}
+      <div class="section-divider">📝 {{ t.pdf_type_text }}</div>
+      <div class="fields-grid">
+        {% for f in text_fields %}
+        <div class="field-card {% if f.type == 'multiline' %}wide{% endif %}">
+          <div class="field-label">
+            {{ f.name }}
+            <span class="field-type-badge">{{ f.type }}</span>
+          </div>
+          {% if f.type == 'multiline' %}
+            <textarea class="textarea" name="f_{{ f.name }}" rows="4"
+                      placeholder="{{ f.default or t.enter_value }}"
+                      data-autosave="{{ file_id }}_{{ f.name }}"
+                      style="min-height:80px">{{ f.default }}</textarea>
+          {% else %}
+            <input class="input" type="text" name="f_{{ f.name }}"
+                   value="{{ f.default }}"
+                   placeholder="{{ f.default or t.enter_value }}"
+                   data-autosave="{{ file_id }}_{{ f.name }}">
+          {% endif %}
+        </div>
+        {% endfor %}
       </div>
-      {% endfor %}
-    </div>
+    {% endif %}
+
+    <!-- Checkboxes -->
+    {% set checkbox_fields = fields | selectattr('type','equalto','checkbox') | list %}
+    {% if checkbox_fields %}
+      <div class="section-divider">☑️ {{ t.pdf_type_checkbox }}</div>
+      <div class="fields-grid">
+        {% for f in checkbox_fields %}
+        <div class="field-card">
+          <div class="field-label">{{ f.name }}</div>
+          <label class="check-pill" style="display:inline-flex">
+            <input type="checkbox" name="f_{{ f.name }}"
+                   {% if f.default and f.default != 'Off' %}checked{% endif %}>
+            <span>{{ f.name }}</span>
+          </label>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Radio buttons -->
+    {% set radio_fields = fields | selectattr('type','equalto','radio') | list %}
+    {% if radio_fields %}
+      <div class="section-divider">🔘 {{ t.pdf_type_radio }}</div>
+      <div class="fields-grid">
+        {% for f in radio_fields %}
+        <div class="field-card">
+          <div class="field-label">{{ f.name }}</div>
+          <div class="radio-group">
+            {% for opt in f.options %}
+            <label class="radio-pill">
+              <input type="radio" name="f_{{ f.name }}" value="{{ opt }}"
+                     {% if f.default == opt %}checked{% endif %}>
+              <span>{{ opt }}</span>
+            </label>
+            {% endfor %}
+            {% if not f.options %}
+              <span style="color:var(--muted);font-size:12px">{{ t.pdf_no_options }}</span>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Select / Listbox -->
+    {% set select_fields = fields | selectattr('type','in',['select','listbox']) | list %}
+    {% if select_fields %}
+      <div class="section-divider">📋 {{ t.pdf_type_select }}</div>
+      <div class="fields-grid">
+        {% for f in select_fields %}
+        <div class="field-card">
+          <div class="field-label">
+            {{ f.name }}
+            <span class="field-type-badge">{{ f.type }}</span>
+          </div>
+          <select class="input" name="f_{{ f.name }}"
+                  {% if f.type == 'listbox' %}size="4"{% endif %}>
+            {% for opt in f.options %}
+            <option value="{{ opt }}"
+                    {% if f.default == opt %}selected{% endif %}>{{ opt }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
 
   {% else %}
+    <!-- No form fields — annotation fallback -->
     <div class="card card-orange" style="margin-bottom:20px">
       <div class="card-title">{{ t.no_fields_title }}</div>
-      <p style="color:var(--text-2);font-size:14px;margin-bottom:16px">
-        {{ t.no_fields_msg }}
-      </p>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:16px">{{ t.no_fields_msg }}</p>
       <div class="input-group">
         <label class="input-label" for="annotation">{{ t.annotation_label }}</label>
-        <textarea
-          class="textarea"
-          id="annotation"
-          name="annotation"
-          rows="5"
-          maxlength="200"
-          placeholder="{{ t.annotation_ph }}"
-        ></textarea>
-        <div style="color:var(--text-2);font-size:12px;margin-top:4px;text-align:right">{{ t.max_200 }}</div>
+        <textarea class="textarea" id="annotation" name="annotation"
+                  rows="4" maxlength="200" placeholder="{{ t.annotation_ph }}"></textarea>
+        <div style="color:var(--muted);font-size:12px;margin-top:4px;text-align:right">
+          {{ t.max_200 }}
+        </div>
       </div>
     </div>
   {% endif %}
 
-  <!-- Action buttons -->
-  <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap">
-    <button type="submit" class="btn btn-primary" id="exportBtn">{{ t.download_filled }}</button>
-    <a href="/pdf/" class="btn btn-secondary">{{ t.new_upload }}</a>
+  <!-- Options row -->
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;flex-wrap:wrap">
+    <label class="check-pill" style="display:inline-flex">
+      <input type="checkbox" name="flatten" value="1">
+      <span>{{ t.pdf_flatten_label }}</span>
+    </label>
+    <span style="font-size:11px;color:var(--muted)">{{ t.pdf_flatten_note }}</span>
+  </div>
+
+  <!-- Sticky action bar -->
+  <div class="action-bar">
+    <button type="submit" name="action" value="preview"
+            class="btn btn-primary" id="previewBtn">
+      {{ t.pdf_fill_preview_btn }}
+    </button>
+    <button type="submit" name="action" value="download"
+            class="btn btn-secondary" id="downloadBtn">
+      {{ t.pdf_fill_download_btn }}
+    </button>
+    <a href="{{ url_for('pdf_filler.index') }}" class="btn btn-ghost">
+      ← {{ t.new_upload }}
+    </a>
+    {% if has_fields %}
+      <span style="margin-left:auto;font-size:12px;color:var(--muted)" id="autosaveStatus"></span>
+    {% endif %}
   </div>
 
 </form>
@@ -78,13 +260,62 @@
 
 {% block scripts %}
 <script>
-  const fillForm = document.getElementById('fillForm');
-  const exportBtn = document.getElementById('exportBtn');
-  const dlLabel = {{ t.download_filled | tojson }};
+(function () {
+  const STORAGE_KEY = 'pdffill_{{ file_id }}';
 
-  fillForm.addEventListener('submit', function () {
-    setLoading(exportBtn, true, '⏳');
-    setTimeout(function () { setLoading(exportBtn, false, dlLabel); }, 8000);
+  // ── Auto-save / restore ──────────────────────────────────────────────────
+  function saveAll() {
+    const data = {};
+    document.querySelectorAll('[data-autosave]').forEach(function (el) {
+      data[el.dataset.autosave] = el.value;
+    });
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+    const st = document.getElementById('autosaveStatus');
+    if (st) st.textContent = '{{ t.pdf_auto_saved }}';
+  }
+
+  function restoreAll() {
+    let data = {};
+    try { data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) {}
+    document.querySelectorAll('[data-autosave]').forEach(function (el) {
+      if (data[el.dataset.autosave] !== undefined) {
+        el.value = data[el.dataset.autosave];
+      }
+    });
+  }
+
+  restoreAll();
+
+  let _saveTimer = null;
+  document.querySelectorAll('[data-autosave]').forEach(function (el) {
+    el.addEventListener('input', function () {
+      clearTimeout(_saveTimer);
+      _saveTimer = setTimeout(saveAll, 800);
+    });
   });
+
+  // ── Form submit loading state ─────────────────────────────────────────────
+  const form = document.getElementById('fillForm');
+  form.addEventListener('submit', function (e) {
+    const clicked = document.activeElement;
+    const id = clicked && clicked.id;
+    if (typeof setLoading === 'function') {
+      if (id === 'previewBtn')  setLoading(document.getElementById('previewBtn'),  true, '⏳');
+      if (id === 'downloadBtn') setLoading(document.getElementById('downloadBtn'), true, '⏳');
+    }
+  });
+
+  // ── Radio pill visual feedback ────────────────────────────────────────────
+  document.querySelectorAll('.radio-pill input, .check-pill input').forEach(function (inp) {
+    inp.addEventListener('change', function () {
+      if (inp.type === 'radio') {
+        const name = inp.name;
+        document.querySelectorAll('.radio-pill input[name="' + name + '"]').forEach(function (r) {
+          r.closest('.radio-pill').classList.toggle('selected', r.checked);
+        });
+      }
+    });
+  });
+})();
 </script>
 {% endblock %}
