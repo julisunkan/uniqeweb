@@ -77,9 +77,11 @@
 
   document.getElementById('conn-host').textContent = user + '@' + host + ':' + port;
 
-  const socket = io();
+  const socket = io({ transports: ['websocket', 'polling'] });
 
-  socket.emit('ssh_connect', { host, port, username: user, password });
+  socket.on('connect', function () {
+    socket.emit('ssh_connect', { host, port, username: user, password });
+  });
 
   socket.on('ssh_connected', function () {
     const statusEl = document.getElementById('conn-status');
