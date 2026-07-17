@@ -42,13 +42,13 @@ args = "Flask App"
 name = "Flask App"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd /home/runner/workspace && python app.py"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd /home/runner/workspace && pip install -r requirements.txt -q && python app.py"
+waitForPort = 5000
 
 [[ports]]
 localPort = 5000
