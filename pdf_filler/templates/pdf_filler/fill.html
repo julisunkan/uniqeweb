@@ -349,12 +349,8 @@
 
       <!-- Sticky action bar -->
       <div class="action-bar">
-        <button type="submit" name="action" value="preview"
-                class="btn btn-primary" id="previewBtn">
-          {{ t.pdf_fill_preview_btn }}
-        </button>
         <button type="submit" name="action" value="download"
-                class="btn btn-secondary" id="downloadBtn">
+                class="btn btn-primary" id="downloadBtn">
           {{ t.pdf_fill_download_btn }}
         </button>
         <a href="{{ url_for('pdf_filler.index') }}" class="btn btn-ghost">←</a>
