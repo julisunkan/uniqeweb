@@ -1,4 +1,5 @@
 """PDF Form Filler — Blueprint routes."""
+import base64
 import io
 import json
 import logging
@@ -75,7 +76,38 @@ def _field_type(info: dict) -> str:
         return 'checkbox'
     if ft == '/Ch':
         return 'select' if (ff & 131072) else 'listbox'
+    if ft == '/Sig':
+        return 'signature'
     return 'text'
+
+
+def _find_field_rects(reader: pypdf.PdfReader) -> dict:
+    """Scan every page's widget annotations and return
+    {field_name: {'page': int, 'rect': [x1,y1,x2,y2]}} for each widget found."""
+    rects: dict[str, dict] = {}
+    for page_num, page in enumerate(reader.pages):
+        annots = page.get('/Annots')
+        if not annots:
+            continue
+        for ref in annots:
+            try:
+                annot = ref.get_object()
+                if annot.get('/Subtype') != '/Widget':
+                    continue
+                raw_t = annot.get('/T')
+                if raw_t is None:
+                    continue
+                name = str(raw_t)
+                rect_raw = annot.get('/Rect')
+                if rect_raw is None:
+                    continue
+                rects[name] = {
+                    'page': page_num,
+                    'rect': [float(v) for v in rect_raw],
+                }
+            except Exception:
+                pass
+    return rects
 
 
 def _build_field_meta(all_fields: dict) -> list[dict]:
@@ -212,7 +244,8 @@ def fill(file_id: str):
 
 
 def _collect_field_values(field_meta: list, form) -> dict:
-    """Build a {field_name: value} dict from submitted form data."""
+    """Build a {field_name: value} dict from submitted form data.
+    Signature fields are handled separately and excluded here."""
     values: dict[str, str] = {}
     for meta in field_meta:
         fname = meta['name']
@@ -228,7 +261,66 @@ def _collect_field_values(field_meta: list, form) -> dict:
             values[fname] = f'/{val}' if val and not val.startswith('/') else val
         elif ftype in ('select', 'listbox'):
             values[fname] = form.get(key, '')
+        # 'signature' is skipped — overlaid as an image in _write_pdf
     return values
+
+
+def _overlay_signatures(writer: pypdf.PdfWriter, src_path: str,
+                        field_meta: list, form) -> None:
+    """For each signature field with drawn data, stamp the PNG onto the PDF page."""
+    sig_fields = [m for m in field_meta if m.get('type') == 'signature']
+    if not sig_fields:
+        return
+
+    try:
+        from reportlab.pdfgen import canvas as rl_canvas
+        from reportlab.lib.utils import ImageReader
+    except ImportError:
+        logger.warning('reportlab not available — signatures skipped')
+        return
+
+    # Build a rect lookup from the source PDF annotations
+    src_reader = pypdf.PdfReader(src_path)
+    field_rects = _find_field_rects(src_reader)
+
+    for meta in sig_fields:
+        fname    = meta['name']
+        data_url = form.get(f'f_{fname}', '')
+        if not data_url or ',' not in data_url:
+            continue                         # nothing drawn
+
+        info = field_rects.get(fname)
+        if not info:
+            logger.warning('Signature field %r not found in annotations', fname)
+            continue
+
+        page_num         = info['page']
+        x1, y1, x2, y2  = info['rect']
+        w, h             = x2 - x1, y2 - y1
+        if w <= 0 or h <= 0:
+            continue
+
+        try:
+            _, b64    = data_url.split(',', 1)
+            img_bytes = base64.b64decode(b64)
+            img_buf   = io.BytesIO(img_bytes)
+
+            page     = writer.pages[page_num]
+            pw       = float(page.mediabox.width)
+            ph       = float(page.mediabox.height)
+
+            overlay_buf = io.BytesIO()
+            c = rl_canvas.Canvas(overlay_buf, pagesize=(pw, ph))
+            c.drawImage(ImageReader(img_buf), x1, y1,
+                        width=w, height=h, mask='auto')
+            c.save()
+            overlay_buf.seek(0)
+
+            overlay_r = pypdf.PdfReader(overlay_buf)
+            writer.pages[page_num].merge_page(overlay_r.pages[0])
+            logger.info('Stamped signature %r on page %d', fname, page_num)
+        except Exception as exc:
+            logger.error('Signature overlay failed for %r: %s', fname, exc)
 
 
 def _write_pdf(src_path: str, field_meta: list, form,
@@ -242,6 +334,8 @@ def _write_pdf(src_path: str, field_meta: list, form,
         field_values = _collect_field_values(field_meta, form)
         for page in writer.pages:
             writer.update_page_form_field_values(page, field_values)
+        # Stamp any drawn signatures on top
+        _overlay_signatures(writer, src_path, field_meta, form)
     elif annotation:
         try:
             from reportlab.pdfgen import canvas as rl_canvas

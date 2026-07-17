@@ -1,0 +1,132 @@
+%PDF-1.3
+%‚„œ”
+1 0 obj
+<<
+/Producer (pypdf)
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Count 1
+/Kids [ 4 0 R ]
+>>
+endobj
+3 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+/Outlines 5 0 R
+/AcroForm 8 0 R
+>>
+endobj
+4 0 obj
+<<
+/Type /Page
+/Resources <<
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Annots [ 6 0 R 7 0 R ]
+>>
+endobj
+5 0 obj
+<<
+>>
+endobj
+6 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/FT /Sig
+/T (Signature)
+/Rect [ 60 100 535 200 ]
+/F 4
+/P 4 0 R
+>>
+endobj
+7 0 obj
+<<
+/Type /Annot
+/Subtype /Widget
+/FT /Tx
+/T (FullName)
+/Rect [ 60 680 535 720 ]
+/F 4
+/DA (\057Helvetica 12 Tf 0 g)
+/V ()
+/AP <<
+/N 10 0 R
+>>
+>>
+endobj
+8 0 obj
+<<
+/SigFlags 3
+/Fields [ 6 0 R 7 0 R ]
+/NeedAppearances true
+/DR <<
+/Font <<
+/Helvetica 9 0 R
+>>
+>>
+>>
+endobj
+9 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/Name /Helvetica
+/BaseFont /Helvetica
+/Encoding /WinAnsiEncoding
+>>
+endobj
+10 0 obj
+<<
+/Type /XObject
+/Subtype /Form
+/BBox [ 0.0 0.0 475 40 ]
+/Length 70
+/Resources <<
+/Font <<
+/Helvetica 9 0 R
+>>
+>>
+>>
+stream
+q
+/Tx BMC 
+q
+2 1 471.0 38.0 re
+W
+BT
+/Helvetica 12.0 Tf 0 g
+ET
+Q
+EMC
+Q
+
+endstream
+endobj
+xref
+0 11
+0000000000 65535 f 
+0000000015 00000 n 
+0000000054 00000 n 
+0000000113 00000 n 
+0000000194 00000 n 
+0000000312 00000 n 
+0000000333 00000 n 
+0000000447 00000 n 
+0000000606 00000 n 
+0000000724 00000 n 
+0000000838 00000 n 
+trailer
+<<
+/Size 11
+/Root 3 0 R
+/Info 1 0 R
+>>
+startxref
+1060
+%%EOF

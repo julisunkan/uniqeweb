@@ -165,6 +165,52 @@
     font-weight: 700;
   }
 
+  /* ── Signature pad ──────────────────────────────────────────── */
+  .sig-wrap {
+    position: relative;
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    cursor: crosshair;
+  }
+  .sig-canvas {
+    display: block;
+    width: 100%;
+    height: 140px;
+    touch-action: none;
+  }
+  .sig-guide {
+    position: absolute;
+    bottom: 10px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 11px;
+    color: rgba(0,0,0,0.25);
+    pointer-events: none;
+    user-select: none;
+  }
+  .sig-empty .sig-wrap { border-color: rgba(255,255,255,0.18); }
+  .sig-has-data .sig-wrap { border-color: var(--accent); }
+  .sig-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .sig-clear-btn {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06);
+    color: var(--muted);
+    cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .sig-clear-btn:hover { background: rgba(239,68,68,.15); color: #f87171; border-color: #f87171; }
+  .sig-status { font-size: 11px; color: var(--muted); }
+
   /* ── Action bar ─────────────────────────────────────────────── */
   .action-bar {
     position: sticky;
@@ -327,6 +373,36 @@
         </div>
         {% endif %}
 
+        {# ── Signatures ── #}
+        {% set sig_fields = fields | selectattr('type','equalto','signature') | list %}
+        {% if sig_fields %}
+        <div class="field-section">
+          <div class="field-section-label">✍️ Signatures</div>
+          {% for f in sig_fields %}
+          <div class="field-card wide sig-empty" id="sigcard_{{ loop.index }}">
+            <div class="field-label">
+              {{ f.name }}<span class="ftype-badge">signature</span>
+            </div>
+            <div class="sig-wrap">
+              <canvas class="sig-canvas"
+                      id="sig_canvas_{{ loop.index }}"
+                      data-index="{{ loop.index }}"
+                      width="800" height="280"></canvas>
+              <div class="sig-guide">Sign here</div>
+            </div>
+            <div class="sig-toolbar">
+              <button type="button" class="sig-clear-btn"
+                      data-index="{{ loop.index }}">✕ Clear</button>
+              <span class="sig-status" id="sig_status_{{ loop.index }}">Not signed</span>
+            </div>
+            <input type="hidden" class="sig-input live-field"
+                   name="f_{{ f.name }}"
+                   id="sig_input_{{ loop.index }}">
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
       {% else %}
         <!-- No AcroForm fields → annotation fallback -->
         <div class="card card-orange" style="margin-bottom:16px">
@@ -453,6 +529,92 @@
     if (el.tagName === 'TEXTAREA' || el.type === 'text') {
       el.addEventListener('input', function () { saveAll(); schedulePreview(); });
     }
+  });
+
+  /* ── Signature pads ─────────────────────────────────────────── */
+  function initSigPad(idx) {
+    const canvas   = document.getElementById('sig_canvas_' + idx);
+    const input    = document.getElementById('sig_input_' + idx);
+    const card     = document.getElementById('sigcard_' + idx);
+    const statusEl = document.getElementById('sig_status_' + idx);
+    const clearBtn = card.querySelector('.sig-clear-btn');
+    const guide    = card.querySelector('.sig-guide');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let drawing = false, hasMark = false;
+
+    function getXY(e) {
+      const r = canvas.getBoundingClientRect();
+      const sx = canvas.width  / r.width;
+      const sy = canvas.height / r.height;
+      const src = e.touches ? e.touches[0] : e;
+      return { x: (src.clientX - r.left) * sx, y: (src.clientY - r.top) * sy };
+    }
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    clearCanvas();
+
+    function onStart(e) {
+      e.preventDefault();
+      drawing = true;
+      const p = getXY(e);
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      if (!hasMark) {
+        guide.style.display = 'none';
+      }
+    }
+    function onMove(e) {
+      if (!drawing) return;
+      e.preventDefault();
+      const p = getXY(e);
+      ctx.lineWidth   = 2.5;
+      ctx.lineCap     = 'round';
+      ctx.lineJoin    = 'round';
+      ctx.strokeStyle = '#1a2744';
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+    }
+    function onEnd(e) {
+      if (!drawing) return;
+      drawing = false;
+      hasMark = true;
+      card.classList.replace('sig-empty', 'sig-has-data');
+      statusEl.textContent = 'Signed ✓';
+      statusEl.style.color = '#22c55e';
+      input.value = canvas.toDataURL('image/png');
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    canvas.addEventListener('mousedown',  onStart);
+    canvas.addEventListener('mousemove',  onMove);
+    canvas.addEventListener('mouseup',    onEnd);
+    canvas.addEventListener('mouseleave', onEnd);
+    canvas.addEventListener('touchstart', onStart, { passive: false });
+    canvas.addEventListener('touchmove',  onMove,  { passive: false });
+    canvas.addEventListener('touchend',   onEnd);
+
+    clearBtn.addEventListener('click', function () {
+      clearCanvas();
+      hasMark = false;
+      guide.style.display = '';
+      card.classList.replace('sig-has-data', 'sig-empty');
+      statusEl.textContent = 'Not signed';
+      statusEl.style.color = '';
+      input.value = '';
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  }
+
+  document.querySelectorAll('.sig-canvas').forEach(function (c) {
+    initSigPad(c.dataset.index);
   });
 
   /* ── Form submit loading states ────────────────────────────── */
