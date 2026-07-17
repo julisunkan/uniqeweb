@@ -211,6 +211,69 @@ def fill(file_id: str):
     )
 
 
+def _collect_field_values(field_meta: list, form) -> dict:
+    """Build a {field_name: value} dict from submitted form data."""
+    values: dict[str, str] = {}
+    for meta in field_meta:
+        fname = meta['name']
+        ftype = meta['type']
+        key   = f'f_{fname}'
+        if ftype in ('text', 'multiline'):
+            values[fname] = form.get(key, '')
+        elif ftype == 'checkbox':
+            checked = form.get(key) == 'on'
+            values[fname] = meta.get('on_state', '/Yes') if checked else '/Off'
+        elif ftype == 'radio':
+            val = form.get(key, '')
+            values[fname] = f'/{val}' if val and not val.startswith('/') else val
+        elif ftype in ('select', 'listbox'):
+            values[fname] = form.get(key, '')
+    return values
+
+
+def _write_pdf(src_path: str, field_meta: list, form,
+               flatten: bool = False, annotation: str = '') -> io.BytesIO:
+    """Fill a PDF in memory and return a BytesIO of the result."""
+    reader = pypdf.PdfReader(src_path)
+    writer = pypdf.PdfWriter()
+    writer.append(reader)
+
+    if field_meta:
+        field_values = _collect_field_values(field_meta, form)
+        for page in writer.pages:
+            writer.update_page_form_field_values(page, field_values)
+    elif annotation:
+        try:
+            from reportlab.pdfgen import canvas as rl_canvas
+            from reportlab.lib.pagesizes import letter
+            packet = io.BytesIO()
+            c = rl_canvas.Canvas(packet, pagesize=letter)
+            c.setFont('Helvetica', 12)
+            c.drawString(72, 700, annotation[:200])
+            c.save()
+            packet.seek(0)
+            overlay_r = pypdf.PdfReader(packet)
+            writer.pages[0].merge_page(overlay_r.pages[0])
+        except Exception as exc:
+            logger.warning('Annotation overlay failed: %s', exc)
+
+    if flatten:
+        for page in writer.pages:
+            annots = page.get('/Annots')
+            if annots:
+                keep = [ref for ref in list(annots)
+                        if ref.get_object().get('/Subtype') != '/Widget']
+                if keep:
+                    page[pypdf.generic.NameObject('/Annots')] = pypdf.generic.ArrayObject(keep)
+                else:
+                    del page['/Annots']
+
+    buf = io.BytesIO()
+    writer.write(buf)
+    buf.seek(0)
+    return buf
+
+
 @bp.route('/fill/<file_id>', methods=['POST'])
 def fill_submit(file_id: str):
     t = get_t()
@@ -222,11 +285,52 @@ def fill_submit(file_id: str):
         flash(t['pdf_not_found'], 'error')
         return redirect(url_for('pdf_filler.index'))
 
-    src_path   = os.path.join(UPLOADS_DIR, f'{file_id}.pdf')
-    base_name  = os.path.splitext(row['original_name'])[0]
-    out_name   = f'{base_name}_Filled.pdf'
-    out_path   = os.path.join(OUTPUTS_DIR, f'{file_id}_filled.pdf')
-    flatten    = request.form.get('flatten') == '1'
+    field_meta = json.loads(row['field_metadata'] or '[]')
+    if not field_meta and row['field_names']:
+        field_meta = [{'name': n, 'type': 'text', 'options': [],
+                       'default': '', 'on_state': '/Yes'}
+                      for n in json.loads(row['field_names'])]
+
+    src_path  = os.path.join(UPLOADS_DIR, f'{file_id}.pdf')
+    base_name = os.path.splitext(row['original_name'])[0]
+    out_name  = f'{base_name}_Filled.pdf'
+    out_path  = os.path.join(OUTPUTS_DIR, f'{file_id}_filled.pdf')
+    flatten   = request.form.get('flatten') == '1'
+    annotation = request.form.get('annotation', '').strip()
+
+    t0 = time.time()
+    try:
+        buf = _write_pdf(src_path, field_meta, request.form,
+                         flatten=flatten, annotation=annotation)
+        with open(out_path, 'wb') as fh:
+            fh.write(buf.read())
+        logger.info('Filled %s in %.2fs (flatten=%s)', file_id, time.time() - t0, flatten)
+    except Exception as exc:
+        logger.error('Fill failed for %s: %s', file_id, exc)
+        flash(f"{t['pdf_fill_error']}: {exc}", 'error')
+        return redirect(url_for('pdf_filler.fill', file_id=file_id))
+
+    with get_db() as conn:
+        conn.execute('UPDATE uploads SET output_name = ? WHERE id = ?',
+                     (out_name, file_id))
+        conn.commit()
+
+    if request.form.get('action') == 'download':
+        return send_file(out_path, as_attachment=True, download_name=out_name,
+                         mimetype='application/pdf')
+
+    return redirect(url_for('pdf_filler.preview', file_id=file_id))
+
+
+@bp.route('/live/<file_id>', methods=['POST'])
+def live_preview(file_id: str):
+    """Return an in-memory filled PDF for the live preview panel (no DB write)."""
+    with get_db() as conn:
+        row = conn.execute(
+            'SELECT * FROM uploads WHERE id = ?', (file_id,)
+        ).fetchone()
+    if row is None:
+        return Response('Not found', status=404)
 
     field_meta = json.loads(row['field_metadata'] or '[]')
     if not field_meta and row['field_names']:
@@ -234,97 +338,26 @@ def fill_submit(file_id: str):
                        'default': '', 'on_state': '/Yes'}
                       for n in json.loads(row['field_names'])]
 
-    t0 = time.time()
+    src_path   = os.path.join(UPLOADS_DIR, f'{file_id}.pdf')
+    annotation = request.form.get('annotation', '').strip()
     try:
-        reader = pypdf.PdfReader(src_path)
-        writer = pypdf.PdfWriter()
-        writer.append(reader)
-
-        if field_meta:
-            # Build values dict from submitted form data
-            field_values: dict[str, str] = {}
-            for meta in field_meta:
-                fname = meta['name']
-                ftype = meta['type']
-                key   = f'f_{fname}'
-
-                if ftype in ('text', 'multiline'):
-                    field_values[fname] = request.form.get(key, '')
-
-                elif ftype == 'checkbox':
-                    checked = request.form.get(key) == 'on'
-                    field_values[fname] = meta.get('on_state', '/Yes') if checked else '/Off'
-
-                elif ftype == 'radio':
-                    val = request.form.get(key, '')
-                    # Store with leading '/' as PDF expects
-                    field_values[fname] = f'/{val}' if val and not val.startswith('/') else val
-
-                elif ftype in ('select', 'listbox'):
-                    field_values[fname] = request.form.get(key, '')
-
-            # Apply to every page
-            for page in writer.pages:
-                writer.update_page_form_field_values(page, field_values)
-
-        else:
-            # No form fields → text annotation on first page
-            annotation = request.form.get('annotation', '').strip()
-            if annotation:
-                try:
-                    from reportlab.pdfgen import canvas as rl_canvas
-                    from reportlab.lib.pagesizes import letter
-                    packet = io.BytesIO()
-                    c = rl_canvas.Canvas(packet, pagesize=letter)
-                    c.setFont('Helvetica', 12)
-                    c.drawString(72, 700, annotation[:200])
-                    c.save()
-                    packet.seek(0)
-                    overlay_r = pypdf.PdfReader(packet)
-                    writer.pages[0].merge_page(overlay_r.pages[0])
-                except Exception as exc:
-                    logger.warning('Annotation overlay failed: %s', exc)
-
-        # Optional: flatten (remove interactive widgets after filling)
-        if flatten:
-            for page in writer.pages:
-                annots = page.get('/Annots')
-                if annots:
-                    keep = []
-                    for ref in list(annots):
-                        try:
-                            obj = ref.get_object()
-                            if obj.get('/Subtype') != '/Widget':
-                                keep.append(ref)
-                        except Exception:
-                            keep.append(ref)
-                    if keep:
-                        page[pypdf.generic.NameObject('/Annots')] = pypdf.generic.ArrayObject(keep)
-                    else:
-                        del page['/Annots']
-
-        with open(out_path, 'wb') as fh:
-            writer.write(fh)
-
-        logger.info('Filled %s in %.2fs (flatten=%s)', file_id, time.time() - t0, flatten)
-
+        buf = _write_pdf(src_path, field_meta, request.form, annotation=annotation)
     except Exception as exc:
-        logger.error('Fill failed for %s: %s', file_id, exc)
-        flash(f"{t['pdf_fill_error']}: {exc}", 'error')
-        return redirect(url_for('pdf_filler.fill', file_id=file_id))
+        logger.warning('Live preview failed for %s: %s', file_id, exc)
+        return Response('Error', status=500)
 
-    # Store output name
-    with get_db() as conn:
-        conn.execute('UPDATE uploads SET output_name = ? WHERE id = ?',
-                     (out_name, file_id))
-        conn.commit()
+    return Response(buf.read(), mimetype='application/pdf',
+                    headers={'Cache-Control': 'no-store'})
 
-    action = request.form.get('action', 'preview')
-    if action == 'download':
-        return send_file(out_path, as_attachment=True, download_name=out_name,
-                         mimetype='application/pdf')
 
-    return redirect(url_for('pdf_filler.preview', file_id=file_id))
+@bp.route('/original/<file_id>')
+def original_pdf(file_id: str):
+    """Serve the original (unfilled) PDF inline for the preview panel."""
+    src_path = os.path.join(UPLOADS_DIR, f'{file_id}.pdf')
+    if not os.path.exists(src_path):
+        return Response('Not found', status=404)
+    return send_file(src_path, mimetype='application/pdf',
+                     as_attachment=False)
 
 
 @bp.route('/preview/<file_id>')
