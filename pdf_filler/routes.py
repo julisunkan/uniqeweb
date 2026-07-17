@@ -72,14 +72,19 @@ def upload():
     save_path = os.path.join(UPLOADS_DIR, f'{file_id}.pdf')
     f.save(save_path)
 
-    # Detect form fields
+    # Detect form fields, excluding pure push-buttons (navigation/submit/reset)
     try:
         reader = pypdf.PdfReader(save_path)
-        text_fields = reader.get_form_text_fields() or {}
         all_fields = reader.get_fields() or {}
-        # Merge both sets
-        combined = {**all_fields, **text_fields}
-        field_names = list(combined.keys())
+        fillable = []
+        for name, info in all_fields.items():
+            ft  = info.get('/FT', '')
+            ff  = int(info.get('/Ff', 0))
+            # /Btn with pushbutton flag (bit 17, value 65536) → skip
+            if ft == '/Btn' and (ff & 65536):
+                continue
+            fillable.append(name)
+        field_names = fillable
         has_fields = 1 if field_names else 0
     except Exception:
         field_names = []
@@ -110,7 +115,10 @@ def fill(file_id):
     return render_template(
         'pdf_filler/fill.html',
         upload=row,
-        field_names=field_names
+        upload_id=file_id,
+        original_name=row['original_name'],
+        fields=field_names,
+        has_fields=bool(field_names),
     )
 
 
