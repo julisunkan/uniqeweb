@@ -134,7 +134,9 @@
     <div style="display:flex;gap:8px;align-items:center;">
       <a href="/flash/study/{{ deck.id }}" class="btn btn-sm btn-primary">{{ t.study_btn }}</a>
       <button class="btn btn-sm btn-secondary" type="button" title="Report this deck"
-              onclick="openReportModal('/flash/report', {{ deck.id | string | tojson }}, {{ deck.title | tojson }})">⚑</button>
+              data-report-endpoint="/flash/report"
+              data-report-ref="{{ deck.id }}"
+              data-report-preview="{{ deck.title | e }}">⚑ Report</button>
       <form method="POST" action="/flash/delete/{{ deck.id }}" style="display:inline">
         <button class="btn btn-sm btn-danger" type="submit">🗑</button>
       </form>
@@ -241,6 +243,17 @@ async function submitReport() {
 
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeReportModal();
+});
+
+// Wire up data-attribute report buttons
+document.querySelectorAll('[data-report-endpoint]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    openReportModal(
+      btn.dataset.reportEndpoint,
+      btn.dataset.reportRef || '',
+      btn.dataset.reportPreview || ''
+    );
+  });
 });
 </script>
 {% endblock %}

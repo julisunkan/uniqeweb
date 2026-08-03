@@ -146,7 +146,9 @@
                title="Download audio">{{ t.download_audio }}</a>
           {% endif %}
           <button class="btn btn-sm btn-secondary" type="button" title="Report this content"
-                  onclick="openReportModal('/audio/report', {{ job.id | tojson }}, {{ job.title | tojson }})">⚑</button>
+                  data-report-endpoint="/audio/report"
+                  data-report-ref="{{ job.id | e }}"
+                  data-report-preview="{{ job.title | e }}">⚑ Report</button>
           <form method="POST"
                 action="{{ url_for('audio.delete', job_id=job.id) }}"
                 id="del-form-{{ job.id }}">
@@ -416,6 +418,17 @@ async function submitReport() {
 
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeReportModal();
+});
+
+// Wire up data-attribute report buttons (avoids tojson/quote escaping issues)
+document.querySelectorAll('[data-report-endpoint]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    openReportModal(
+      btn.dataset.reportEndpoint,
+      btn.dataset.reportRef || '',
+      btn.dataset.reportPreview || ''
+    );
+  });
 });
 </script>
 {% endblock %}

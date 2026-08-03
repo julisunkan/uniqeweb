@@ -52,7 +52,9 @@
       <span id="counter" style="font-weight:700;color:var(--muted);font-size:15px;">1 / {{ deck.card_count }}</span>
       <button class="btn btn-sm btn-secondary" id="shuffleBtn" onclick="shuffleDeck()">🔀 {{ t.shuffle_btn }}</button>
       <button class="btn btn-sm btn-secondary" type="button" title="Report this deck"
-              onclick="openReportModal('/flash/report', {{ deck.id | tojson }}, {{ deck.title | tojson }})">⚑ Report</button>
+              data-report-endpoint="/flash/report"
+              data-report-ref="{{ deck.id }}"
+              data-report-preview="{{ deck.title | e }}">⚑ Report</button>
     </div>
   </div>
 </div>
@@ -256,5 +258,16 @@ async function submitReport() {
     if (typeof showToast === 'function') showToast('Request failed.', 'error');
   }
 }
+
+// Wire up data-attribute report buttons
+document.querySelectorAll('[data-report-endpoint]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    openReportModal(
+      btn.dataset.reportEndpoint,
+      btn.dataset.reportRef || '',
+      btn.dataset.reportPreview || ''
+    );
+  });
+});
 </script>
 {% endblock %}
