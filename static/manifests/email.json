@@ -1,7 +1,7 @@
 {
   "id": "/email/",
-  "name": "Email Signature Generator",
-  "short_name": "Email Signature Generator",
+  "name": "Email Signature Maker",
+  "short_name": "Email Signature Maker",
   "description": "Design professional email signatures with live preview, AI taglines, and HTML export.",
   "start_url": "/email",
   "scope": "/email",
