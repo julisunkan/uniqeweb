@@ -400,6 +400,17 @@ def render_preview():
     return jsonify({'html': html})
 
 
+@bp.route('/report', methods=['POST'])
+def report_content():
+    from reports_db import submit_report
+    reason  = request.form.get('reason', '').strip()
+    preview = request.form.get('content_preview', '').strip()
+    if not reason:
+        return jsonify({'ok': False, 'msg': 'Please provide a reason.'}), 400
+    submit_report('email_sig', 'signature', preview, reason, ip=request.remote_addr)
+    return jsonify({'ok': True, 'msg': 'Report submitted. Thank you.'})
+
+
 @bp.route('/export.html')
 def export_html():
     args = request.args

@@ -212,6 +212,18 @@ def delete(deck_id):
     return redirect(url_for('flashcard.index'))
 
 
+@bp.route('/report', methods=['POST'])
+def report_content():
+    from reports_db import submit_report
+    content_ref = request.form.get('content_ref', '').strip()
+    reason      = request.form.get('reason', '').strip()
+    preview     = request.form.get('content_preview', '').strip()
+    if not reason:
+        return jsonify({'ok': False, 'msg': 'Please provide a reason.'}), 400
+    submit_report('flashcard', content_ref, preview, reason, ip=request.remote_addr)
+    return jsonify({'ok': True, 'msg': 'Report submitted. Thank you.'})
+
+
 @bp.route('/api/cards/<int:deck_id>')
 def api_cards(deck_id):
     conn = get_db()

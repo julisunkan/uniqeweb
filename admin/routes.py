@@ -238,6 +238,7 @@ def logout():
 @bp.route('/dashboard')
 @login_required
 def dashboard():
+    from reports_db import get_all_reports, get_pending_count
     conn = get_db()
     settings_rows = conn.execute("SELECT key, value FROM settings").fetchall()
     audit_rows    = conn.execute(
@@ -245,8 +246,10 @@ def dashboard():
     ).fetchall()
     conn.close()
 
-    settings = {r['key']: r['value'] for r in settings_rows}
-    stats    = collect_stats()
+    settings      = {r['key']: r['value'] for r in settings_rows}
+    stats         = collect_stats()
+    reports       = get_all_reports()
+    pending_count = get_pending_count()
 
     return render_template(
         'admin/dashboard.html',
@@ -255,6 +258,8 @@ def dashboard():
         stats=stats,
         audit_log=audit_rows,
         admin_user=session.get('admin_user', 'admin'),
+        reports=reports,
+        pending_count=pending_count,
     )
 
 
@@ -403,3 +408,26 @@ def test_groq():
 @login_required
 def stats_api():
     return jsonify(collect_stats())
+
+
+# ── Reports ───────────────────────────────────────────────────────────────────
+@bp.route('/reports/<int:report_id>/approve', methods=['POST'])
+@login_required
+def approve_report(report_id):
+    from reports_db import resolve_report
+    admin_note = request.form.get('admin_note', '').strip()
+    resolve_report(report_id, 'approved', admin_note)
+    audit('report_approved', f'Report #{report_id} approved')
+    flash('Report approved.', 'success')
+    return redirect(url_for('admin.dashboard') + '#reports')
+
+
+@bp.route('/reports/<int:report_id>/deny', methods=['POST'])
+@login_required
+def deny_report(report_id):
+    from reports_db import resolve_report
+    admin_note = request.form.get('admin_note', '').strip()
+    resolve_report(report_id, 'denied', admin_note)
+    audit('report_denied', f'Report #{report_id} denied')
+    flash('Report denied.', 'success')
+    return redirect(url_for('admin.dashboard') + '#reports')

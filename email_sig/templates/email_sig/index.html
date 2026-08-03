@@ -230,6 +230,8 @@
     <div style="display:flex;gap:12px;flex-wrap:wrap">
       <button class="btn btn-primary"   id="copyBtn" type="button" onclick="copyHTML()">📋 {{ t.copy_html }}</button>
       <button class="btn btn-secondary" id="dlBtn"   type="button" onclick="downloadHTML()">⬇ {{ t.download_html }}</button>
+      <button class="btn btn-secondary" id="reportBtn" type="button" title="Report this signature"
+              onclick="reportSignature()">⚑ Report</button>
     </div>
 
   </div><!-- /sig-section -->
@@ -266,6 +268,27 @@
 
   </div>
 
+</div>
+<!-- ── Report Modal ─────────────────────────────────────────────────────── -->
+<div id="reportOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:2000;justify-content:center;align-items:flex-end" onclick="if(event.target===this)closeReportModal()">
+  <div style="background:var(--surface,#0c1120);border:1px solid rgba(255,255,255,0.1);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;box-sizing:border-box">
+    <div style="font-size:17px;font-weight:800;margin-bottom:4px;color:var(--text,#eef0f8)">🚨 Report Signature</div>
+    <div style="font-size:12px;color:var(--muted,#8b929e);margin-bottom:18px;line-height:1.5">Report inappropriate or harmful AI-generated content to the admin for review.</div>
+    <div id="reportPreviewWrap" style="display:none;margin-bottom:14px">
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted,#8b929e);margin-bottom:5px">Signature Preview (HTML)</div>
+      <div id="reportPreviewText" style="font-size:11px;color:var(--muted,#8b929e);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px;max-height:72px;overflow:auto;word-break:break-all;line-height:1.5;font-family:monospace"></div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted,#8b929e);margin-bottom:6px">Reason <span style="color:#ef4444">*</span></div>
+      <textarea id="reportReason" rows="3" placeholder="Describe why this content is inappropriate…"
+                style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;color:var(--text,#eef0f8);font-size:14px;padding:10px 12px;resize:vertical;font-family:inherit;outline:none"
+                onfocus="this.style.borderColor='#ef4444'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="submitReport()" style="flex:2;height:44px;border-radius:10px;border:none;background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;font-size:14px;font-weight:700;cursor:pointer">Submit Report</button>
+      <button onclick="closeReportModal()" style="flex:1;height:44px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.1);background:none;color:var(--muted,#8b929e);font-size:14px;font-weight:700;cursor:pointer">Cancel</button>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
@@ -423,5 +446,60 @@ document.querySelectorAll('.tpl-pill').forEach(function (btn) {
 
 // ── Initial render ──────────────────────────────────────────────────────
 setTimeout(updatePreview, 500);
+
+/* ── Report modal ──────────────────────────────────────────────────────── */
+let _rEndpoint = '', _rRef = '', _rPreview = '';
+
+function reportSignature() {
+  const inner = $('previewInner');
+  const html  = inner ? inner.innerHTML : '';
+  openReportModal('/email/report', 'signature', html);
+}
+
+function openReportModal(endpoint, ref, preview) {
+  _rEndpoint = endpoint;
+  _rRef      = String(ref || '');
+  _rPreview  = String(preview || '');
+  document.getElementById('reportReason').value = '';
+  const pw = document.getElementById('reportPreviewWrap');
+  const pt = document.getElementById('reportPreviewText');
+  if (_rPreview && !_rPreview.includes('fill_details_left')) {
+    pt.textContent = _rPreview.slice(0, 400) + (_rPreview.length > 400 ? '…' : '');
+    pw.style.display = '';
+  } else {
+    pw.style.display = 'none';
+  }
+  document.getElementById('reportOverlay').style.display = 'flex';
+  setTimeout(function() { document.getElementById('reportReason').focus(); }, 80);
+}
+
+function closeReportModal() {
+  document.getElementById('reportOverlay').style.display = 'none';
+}
+
+async function submitReport() {
+  const reason = (document.getElementById('reportReason').value || '').trim();
+  if (!reason) {
+    if (typeof showToast === 'function') showToast('Please provide a reason.', 'error');
+    return;
+  }
+  const fd = new FormData();
+  fd.append('reason', reason);
+  fd.append('content_ref', _rRef);
+  fd.append('content_preview', _rPreview.slice(0, 500));
+  try {
+    const res = await fetch(_rEndpoint, { method: 'POST', body: fd });
+    const data = await res.json();
+    closeReportModal();
+    if (typeof showToast === 'function')
+      showToast(data.ok ? (data.msg || 'Reported!') : (data.msg || 'Error'), data.ok ? 'success' : 'error');
+  } catch(e) {
+    if (typeof showToast === 'function') showToast('Request failed.', 'error');
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeReportModal();
+});
 </script>
 {% endblock %}

@@ -219,6 +219,18 @@ def download(filename):
                      as_attachment=True, download_name=safe)
 
 
+@bp.route('/report', methods=['POST'])
+def report_content():
+    from reports_db import submit_report
+    content_ref = request.form.get('content_ref', '').strip()
+    reason      = request.form.get('reason', '').strip()
+    preview     = request.form.get('content_preview', '').strip()
+    if not reason:
+        return jsonify({'ok': False, 'msg': 'Please provide a reason.'}), 400
+    submit_report('audio', content_ref, preview, reason, ip=request.remote_addr)
+    return jsonify({'ok': True, 'msg': 'Report submitted. Thank you.'})
+
+
 @bp.route('/delete/<job_id>', methods=['POST'])
 def delete(job_id):
     db = get_db()

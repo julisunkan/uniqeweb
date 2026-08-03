@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# SQLite databases — contain runtime data and may include secrets
+*.db
+*.sqlite
+*.sqlite3
+
+# Generated output files
+audio/outputs/
+pdf_filler/outputs/
+pdf_filler/uploads/
+
+# Environment / secrets
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Replit
+.replit
+replit.nix
