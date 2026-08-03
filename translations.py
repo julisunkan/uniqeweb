@@ -75,9 +75,9 @@ TRANSLATIONS = {
         'audio_deleted':      'Audiobook deleted.',
 
         # ── Email Signature ───────────────────────────────────────────────
-        'email_page_title':   'Email Signature Generator',
-        'email_header':       'Email Signature',
-        'email_hero_title':   '✉️ Signature Builder',
+        'email_page_title':   'Email Signature Maker',
+        'email_header':       'Create Unique Email Signatures',
+        'email_hero_title':   '✉️ Signature Builder from Scratch',
         'email_hero_sub':     'Design a professional email signature with live preview. Copy the HTML or download for use in any email client.',
         'personal_info':      '👤 Personal Info',
         'full_name':          'Full Name',
